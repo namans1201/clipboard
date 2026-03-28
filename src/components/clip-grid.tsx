@@ -7,10 +7,10 @@ import { ClipCard } from './clip-card';
 interface ClipGridProps {
   clips: Clip[];
   groups: Group[];
-  onTogglePin?: (id: string, isPinned: boolean) => void;
-  onDelete?: (id: string) => void;
-  onRestore?: (id: string) => void;
-  onPermanentDelete?: (id: string) => void;
+  onTogglePin?: (id: string, isPinned: boolean) => Promise<void> | void;
+  onDelete?: (id: string) => Promise<void> | void;
+  onRestore?: (id: string) => Promise<void> | void;
+  onPermanentDelete?: (id: string) => Promise<void> | void;
   onClipClick?: (clip: Clip) => void;
   isTrashView?: boolean;
   emptyMessage?: string;
@@ -36,7 +36,7 @@ function ClipGridComponent({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 contain-layout">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 contain-layout">
       {clips.map((clip) => (
         <ClipCard
           key={clip.id}

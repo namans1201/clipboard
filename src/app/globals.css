@@ -192,6 +192,25 @@ button, a, input, textarea, select {
   transition: all 0.15s ease-in-out;
 }
 
+/* Better touch targets for mobile */
+@media (hover: none) and (pointer: coarse) {
+  button, a, input[type="button"], input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Prevent text selection on interactive elements */
+button, .cursor-pointer {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 /* Reduce motion for accessibility */
 @media (prefers-reduced-motion: reduce) {
   *,

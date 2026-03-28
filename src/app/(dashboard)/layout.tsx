@@ -1,6 +1,6 @@
 'use client';
 
-import { Sidebar } from '@/components/sidebar';
+import { Sidebar } from '@/components/sidebar-responsive';
 import { BlurOverlay } from '@/components/blur-overlay';
 import { Toaster } from '@/components/ui/sonner';
 import { useAutoLock } from '@/hooks/use-auto-lock';
@@ -15,9 +15,9 @@ export default function DashboardLayout({
 
   return (
     <BlurOverlay>
-      <div className="flex h-screen">
+      <div className="flex h-screen overflow-hidden">
         <Sidebar />
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto w-full">
           {children}
         </main>
       </div>

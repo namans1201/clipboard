@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useTransition } from 'react';
 import { useParams } from 'next/navigation';
 import { useClips } from '@/hooks/use-clips';
 import { useGroups } from '@/hooks/use-groups';
 import { ClipGrid } from '@/components/clip-grid';
+import { ClipGridSkeleton } from '@/components/clip-card-skeleton';
 import { ClipEditor } from '@/components/clip-editor';
 import { NewClipDialog } from '@/components/new-clip-dialog';
 import { SearchBar } from '@/components/search-bar';
@@ -12,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Clip } from '@/types/database';
 import { FolderOpen, Pencil, Trash2, Check, X } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -25,15 +27,17 @@ export default function GroupPage() {
   const params = useParams();
   const groupId = params.id as string;
   
-  const { clips, loading, createClip, updateClip, togglePin, softDelete } = useClips({ groupId });
-  const { groups, updateGroup, deleteGroup } = useGroups();
+  const { clips, loading: clipsLoading, createClip, updateClip, togglePin, softDelete } = useClips({ groupId });
+  const { groups, loading: groupsLoading, updateGroup, deleteGroup } = useGroups();
   const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const group = groups.find((g) => g.id === groupId);
+  const isLoading = clipsLoading || groupsLoading;
 
   const filteredClips = useMemo(() => {
     if (!searchQuery.trim()) return clips;
@@ -45,6 +49,18 @@ export default function GroupPage() {
     );
   }, [clips, searchQuery]);
 
+  const handleSearchChange = (value: string) => {
+    startTransition(() => {
+      setSearchQuery(value);
+    });
+  };
+
+  const handleClipClick = (clip: Clip) => {
+    startTransition(() => {
+      setSelectedClip(clip);
+    });
+  };
+
   const handleStartEdit = () => {
     if (group) {
       setEditName(group.name);
@@ -54,8 +70,13 @@ export default function GroupPage() {
 
   const handleSaveEdit = async () => {
     if (editName.trim() && group) {
-      await updateGroup(group.id, editName.trim());
-      setIsEditing(false);
+      try {
+        await updateGroup(group.id, editName.trim());
+        setIsEditing(false);
+        toast.success('Group updated');
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Failed to update group');
+      }
     }
   };
 
@@ -66,12 +87,18 @@ export default function GroupPage() {
 
   const handleDeleteGroup = async () => {
     if (group) {
-      await deleteGroup(group.id);
-      window.location.href = '/';
+      try {
+        await deleteGroup(group.id);
+        setShowDeleteDialog(false);
+        toast.success('Group deleted');
+        window.location.href = '/';
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Failed to delete group');
+      }
     }
   };
 
-  if (!group && !loading) {
+  if (!group && !isLoading) {
     return (
       <div className="p-6 flex items-center justify-center h-full">
         <p className="text-muted-foreground">Group not found</p>
@@ -79,48 +106,52 @@ export default function GroupPage() {
     );
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-10 bg-muted rounded w-64" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-48 bg-muted rounded" />
-            ))}
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <FolderOpen className="h-6 w-6 animate-pulse" />
+            <div className="h-8 bg-muted rounded w-48 animate-pulse" />
           </div>
+          <div className="h-10 bg-muted rounded w-64 animate-pulse" />
+          <ClipGridSkeleton count={6} />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <FolderOpen className="h-6 w-6" />
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 smooth-scroll">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <FolderOpen className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
           {isEditing ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
               <Input
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
-                className="h-9 w-48"
+                className="h-9 flex-1 min-w-0"
                 autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSaveEdit();
+                  if (e.key === 'Escape') handleCancelEdit();
+                }}
               />
-              <Button variant="ghost" size="icon" onClick={handleSaveEdit}>
+              <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={handleSaveEdit}>
                 <Check className="h-4 w-4 text-green-600" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={handleCancelEdit}>
+              <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={handleCancelEdit}>
                 <X className="h-4 w-4 text-destructive" />
               </Button>
             </div>
           ) : (
             <>
-              <h1 className="text-2xl font-semibold">{group?.name}</h1>
-              <Button variant="ghost" size="icon" onClick={handleStartEdit}>
+              <h1 className="text-xl sm:text-2xl font-semibold truncate">{group?.name}</h1>
+              <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={handleStartEdit}>
                 <Pencil className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="icon" className="text-destructive" onClick={() => setShowDeleteDialog(true)}>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive flex-shrink-0" onClick={() => setShowDeleteDialog(true)}>
                 <Trash2 className="h-4 w-4" />
               </Button>
             </>
@@ -128,31 +159,34 @@ export default function GroupPage() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex-1 max-w-md">
-          <SearchBar value={searchQuery} onChange={setSearchQuery} />
+          <SearchBar value={searchQuery} onChange={handleSearchChange} />
         </div>
         <NewClipDialog groups={groups} onCreateClip={(content, title) => createClip(content, title, groupId)} />
       </div>
+
+      {isPending && <div className="h-1 bg-primary/20 animate-pulse rounded" />}
 
       <ClipGrid
         clips={filteredClips}
         groups={groups}
         onTogglePin={togglePin}
         onDelete={softDelete}
-        onClipClick={setSelectedClip}
+        onClipClick={handleClipClick}
         emptyMessage={searchQuery ? 'No clips match your search' : 'No clips in this group yet'}
       />
 
       <ClipEditor
+        key={selectedClip?.id ?? 'empty'}
         clip={selectedClip}
         groups={groups}
         open={!!selectedClip}
         onOpenChange={(open) => !open && setSelectedClip(null)}
         onUpdate={updateClip}
         onTogglePin={togglePin}
-        onDelete={(id) => {
-          softDelete(id);
+        onDelete={async (id) => {
+          await softDelete(id);
           setSelectedClip(null);
         }}
       />

@@ -28,7 +28,6 @@ export default function LoginPage() {
         sessionStorage.setItem('is_public_device', 'true');
       } else {
         sessionStorage.removeItem('is_public_device');
-        localStorage.setItem('trusted_device', 'true');
       }
 
       // Reset client to pick up new storage settings

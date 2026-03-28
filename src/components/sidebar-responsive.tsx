@@ -1,15 +1,16 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Clipboard, Pin, Trash2, FolderPlus, Lock, Plus } from 'lucide-react';
+import { Clipboard, Pin, Trash2, FolderPlus, Lock, Plus, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useGroups } from '@/hooks/use-groups';
 import { clearAuthCookies, createClient, resetClient } from '@/lib/supabase/client';
-import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -21,7 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
-export function Sidebar() {
+function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { groups, createGroup } = useGroups();
   const [newGroupName, setNewGroupName] = useState('');
@@ -60,9 +61,9 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className="w-64 border-r bg-sidebar flex flex-col h-screen gpu-accelerated">
+    <>
       <div className="p-4 border-b">
-        <Link href="/" className="flex items-center gap-3 transition-transform hover:scale-105">
+        <Link href="/" className="flex items-center gap-3 transition-transform hover:scale-105" onClick={onNavigate}>
           <Image 
             src="/logo.png" 
             alt="Clipboard Easy Logo" 
@@ -84,15 +85,16 @@ export function Sidebar() {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={onNavigate}
                 className={cn(
                   'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors',
                   isActive
                     ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                    : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
+                    : 'hover:bg-sidebar-accent/50 text-sidebar-foreground'
                 )}
               >
-                <Icon className="h-4 w-4" />
-                {item.label}
+                <Icon className="h-4 w-4 flex-shrink-0" />
+                <span>{item.label}</span>
               </Link>
             );
           })}
@@ -102,25 +104,23 @@ export function Sidebar() {
 
         <div className="space-y-2">
           <div className="flex items-center justify-between px-3">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Groups
-            </span>
+            <span className="text-xs font-semibold text-sidebar-foreground/70 uppercase">Groups</span>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger className="inline-flex items-center justify-center h-6 w-6 rounded-md hover:bg-sidebar-accent/50 transition-colors">
-                <Plus className="h-4 w-4" />
+              <DialogTrigger className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background hover:bg-accent hover:text-accent-foreground h-6 w-6">
+                <Plus className="h-3 w-3" />
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Create New Group</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleCreateGroup} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="groupName">Group Name</Label>
+                  <div>
+                    <Label htmlFor="group-name">Group Name</Label>
                     <Input
-                      id="groupName"
+                      id="group-name"
                       value={newGroupName}
                       onChange={(e) => setNewGroupName(e.target.value)}
-                      placeholder="e.g., Datastack"
+                      placeholder="e.g., Work, Personal"
                       autoFocus
                     />
                   </div>
@@ -135,44 +135,66 @@ export function Sidebar() {
             </Dialog>
           </div>
 
-          <nav className="space-y-1">
+          <div className="space-y-1">
             {groups.map((group) => {
               const isActive = pathname === `/group/${group.id}`;
               return (
                 <Link
                   key={group.id}
                   href={`/group/${group.id}`}
+                  onClick={onNavigate}
                   className={cn(
                     'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors',
                     isActive
                       ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                      : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
+                      : 'hover:bg-sidebar-accent/50 text-sidebar-foreground'
                   )}
                 >
-                  <FolderPlus className="h-4 w-4" />
-                  {group.name}
+                  <FolderPlus className="h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">{group.name}</span>
                 </Link>
               );
             })}
-            {groups.length === 0 && (
-              <p className="px-3 py-2 text-sm text-muted-foreground">
-                No groups yet
-              </p>
-            )}
-          </nav>
+          </div>
         </div>
       </ScrollArea>
 
-      <div className="p-3 border-t space-y-2">
+      <div className="p-3 border-t">
         <Button
           variant="destructive"
-          className="w-full justify-start gap-2"
+          size="sm"
+          className="w-full"
           onClick={handlePanicLock}
         >
-          <Lock className="h-4 w-4" />
-          Lock & Logout
+          <Lock className="h-4 w-4 mr-2" />
+          Panic Lock
         </Button>
       </div>
-    </aside>
+    </>
+  );
+}
+
+export function Sidebar() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <>
+      {/* Mobile Menu Button */}
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetTrigger aria-label="Open navigation menu" className="md:hidden fixed top-4 left-4 z-50 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:opacity-50 disabled:pointer-events-none bg-background/80 backdrop-blur-sm shadow-md hover:bg-accent hover:text-accent-foreground h-10 w-10">
+          <Menu className="h-5 w-5" />
+        </SheetTrigger>
+        <SheetContent side="left" className="p-0 w-64">
+          <aside className="flex flex-col h-full bg-sidebar">
+            <SidebarContent onNavigate={() => setMobileOpen(false)} />
+          </aside>
+        </SheetContent>
+      </Sheet>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex w-64 border-r bg-sidebar flex-col h-screen gpu-accelerated">
+        <SidebarContent />
+      </aside>
+    </>
   );
 }

@@ -1,13 +1,19 @@
 'use client';
 
 import { useEffect, useCallback } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { clearAuthCookies, createClient, resetClient } from '@/lib/supabase/client';
 
 export function useAutoLock(timeoutMinutes: number = 5) {
   const handleLogout = useCallback(async () => {
     const supabase = createClient();
-    await supabase.auth.signOut();
-    window.location.href = '/login';
+
+    try {
+      await supabase.auth.signOut();
+    } finally {
+      clearAuthCookies();
+      resetClient();
+      window.location.href = '/login';
+    }
   }, []);
 
   useEffect(() => {

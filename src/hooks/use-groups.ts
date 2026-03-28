@@ -48,38 +48,48 @@ export function useGroups() {
       .single();
 
     if (error) throw error;
-    await fetchGroups();
+    
+    // Optimistic update - add to local state immediately
+    if (data) {
+      setGroups(prev => [...prev, data as Group]);
+    }
+    
     return data;
   };
 
   const updateGroup = async (id: string, name: string) => {
     const supabase = createClient();
+    
+    // Optimistic update
+    const previousGroups = groups;
+    setGroups(prev => prev.map(g => g.id === id ? { ...g, name } : g));
+    
     const { error } = await supabase
       .from('groups')
       .update({ name })
       .eq('id', id);
 
-    if (error) throw error;
-    await fetchGroups();
+    if (error) {
+      // Rollback on error
+      setGroups(previousGroups);
+      throw error;
+    }
   };
 
   const deleteGroup = async (id: string) => {
     const supabase = createClient();
     
-    // First, unassign clips from this group
-    await supabase
-      .from('clips')
-      .update({ group_id: null })
-      .eq('group_id', id);
-
-    // Then delete the group
+    // ON DELETE SET NULL is already in schema, so just delete the group
+    // The database will automatically set group_id to NULL for related clips
     const { error } = await supabase
       .from('groups')
       .delete()
       .eq('id', id);
 
     if (error) throw error;
-    await fetchGroups();
+    
+    // Optimistic update - remove from local state immediately
+    setGroups(prev => prev.filter(g => g.id !== id));
   };
 
   return {

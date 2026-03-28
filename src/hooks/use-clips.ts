@@ -75,19 +75,36 @@ export function useClips(options: UseClipsOptions = {}) {
       .single();
 
     if (error) throw error;
-    await fetchClips();
+    
+    // Optimistic update
+    if (data) {
+      setClips(prev => [data as Clip, ...prev]);
+    }
+    
     return data;
   };
 
   const updateClip = async (id: string, updates: Partial<Pick<Clip, 'content' | 'title' | 'group_id' | 'is_pinned'>>) => {
     const supabase = createClient();
+    
+    // Optimistic update
+    const previousClips = clips;
+    setClips(prev => prev.map(clip => 
+      clip.id === id 
+        ? { ...clip, ...updates, updated_at: new Date().toISOString() }
+        : clip
+    ));
+    
     const { error } = await supabase
       .from('clips')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', id);
 
-    if (error) throw error;
-    await fetchClips();
+    if (error) {
+      // Rollback on error
+      setClips(previousClips);
+      throw error;
+    }
   };
 
   const togglePin = async (id: string, isPinned: boolean) => {
@@ -96,35 +113,59 @@ export function useClips(options: UseClipsOptions = {}) {
 
   const softDelete = async (id: string) => {
     const supabase = createClient();
+    
+    // Optimistic update - remove from view immediately
+    const previousClips = clips;
+    setClips(prev => prev.filter(clip => clip.id !== id));
+    
     const { error } = await supabase
       .from('clips')
       .update({ is_deleted: true, updated_at: new Date().toISOString() })
       .eq('id', id);
 
-    if (error) throw error;
-    await fetchClips();
+    if (error) {
+      // Rollback on error
+      setClips(previousClips);
+      throw error;
+    }
   };
 
   const restore = async (id: string) => {
     const supabase = createClient();
+    
+    // Optimistic update - remove from trash view
+    const previousClips = clips;
+    setClips(prev => prev.filter(clip => clip.id !== id));
+    
     const { error } = await supabase
       .from('clips')
       .update({ is_deleted: false, updated_at: new Date().toISOString() })
       .eq('id', id);
 
-    if (error) throw error;
-    await fetchClips();
+    if (error) {
+      // Rollback on error
+      setClips(previousClips);
+      throw error;
+    }
   };
 
   const permanentDelete = async (id: string) => {
     const supabase = createClient();
+    
+    // Optimistic update - remove immediately
+    const previousClips = clips;
+    setClips(prev => prev.filter(clip => clip.id !== id));
+    
     const { error } = await supabase
       .from('clips')
       .delete()
       .eq('id', id);
 
-    if (error) throw error;
-    await fetchClips();
+    if (error) {
+      // Rollback on error
+      setClips(previousClips);
+      throw error;
+    }
   };
 
   return {
