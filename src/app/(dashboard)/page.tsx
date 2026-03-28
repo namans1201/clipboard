@@ -76,6 +76,7 @@ export default function HomePage() {
         onDelete={softDelete}
         onClipClick={handleClipClick}
         emptyMessage={searchQuery ? 'No clips match your search' : 'No clips yet. Create your first clip!'}
+        searchQuery={searchQuery}
       />
 
       <ClipEditor

@@ -74,6 +74,7 @@ export default function PinnedPage() {
         onDelete={softDelete}
         onClipClick={handleClipClick}
         emptyMessage={searchQuery ? 'No pinned clips match your search' : 'No pinned clips yet'}
+        searchQuery={searchQuery}
       />
 
       <ClipEditor

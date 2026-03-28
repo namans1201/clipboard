@@ -89,11 +89,27 @@ export function useClips(options: UseClipsOptions = {}) {
     
     // Optimistic update
     const previousClips = clips;
-    setClips(prev => prev.map(clip => 
-      clip.id === id 
-        ? { ...clip, ...updates, updated_at: new Date().toISOString() }
-        : clip
-    ));
+    setClips(prev => {
+      const updated = prev.map(clip => 
+        clip.id === id 
+          ? { ...clip, ...updates, updated_at: new Date().toISOString() }
+          : clip
+      );
+      
+      // If is_pinned changed, re-sort to move pinned clips to top
+      if ('is_pinned' in updates) {
+        return updated.sort((a, b) => {
+          // Pinned first
+          if (a.is_pinned !== b.is_pinned) {
+            return a.is_pinned ? -1 : 1;
+          }
+          // Then by created_at (most recent first)
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
+      }
+      
+      return updated;
+    });
     
     const { error } = await supabase
       .from('clips')

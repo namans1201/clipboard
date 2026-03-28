@@ -162,37 +162,38 @@ export function ClipEditor({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span>Clip Details</span>
-            <div className="flex items-center gap-2">
+        <DialogHeader className="pr-10">
+          <DialogTitle className="flex items-center justify-between gap-4">
+            <span className="truncate">Clip Details</span>
+            <div className="flex items-center gap-1 shrink-0">
               {!isEditing ? (
                 <>
-                  <Button variant="ghost" size="icon" onClick={handleCopy} title="Copy" disabled={isWorking}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleCopy} title="Copy" disabled={isWorking}>
                     <Copy className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
+                    className="h-8 w-8"
                     onClick={handleTogglePin}
                     title={savedClip.isPinned ? 'Unpin' : 'Pin'}
                     disabled={isWorking}
                   >
                     <Pin className={cn('h-4 w-4', savedClip.isPinned && 'fill-current')} />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={handleStartEditing} title="Edit" disabled={isWorking}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleStartEditing} title="Edit" disabled={isWorking}>
                     <Pencil className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="text-destructive" onClick={handleDelete} title="Delete" disabled={isWorking}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={handleDelete} title="Delete" disabled={isWorking}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </>
               ) : (
                 <>
-                  <Button variant="ghost" size="icon" onClick={handleSave} title="Save" disabled={isWorking}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleSave} title="Save" disabled={isWorking}>
                     <Check className="h-4 w-4 text-green-600" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={handleCancel} title="Cancel" disabled={isWorking}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleCancel} title="Cancel" disabled={isWorking}>
                     <X className="h-4 w-4 text-destructive" />
                   </Button>
                 </>

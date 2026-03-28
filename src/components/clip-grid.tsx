@@ -14,6 +14,7 @@ interface ClipGridProps {
   onClipClick?: (clip: Clip) => void;
   isTrashView?: boolean;
   emptyMessage?: string;
+  searchQuery?: string;
 }
 
 function ClipGridComponent({
@@ -26,6 +27,7 @@ function ClipGridComponent({
   onClipClick,
   isTrashView = false,
   emptyMessage = 'No clips yet',
+  searchQuery = '',
 }: ClipGridProps) {
   if (clips.length === 0) {
     return (
@@ -36,7 +38,7 @@ function ClipGridComponent({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 contain-layout">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 contain-layout items-start">
       {clips.map((clip) => (
         <ClipCard
           key={clip.id}
@@ -48,6 +50,7 @@ function ClipGridComponent({
           onPermanentDelete={onPermanentDelete}
           onClick={onClipClick}
           isTrashView={isTrashView}
+          searchQuery={searchQuery}
         />
       ))}
     </div>

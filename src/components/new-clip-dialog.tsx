@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Group } from '@/types/database';
 import {
   Dialog,
@@ -13,8 +13,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Plus, ClipboardPaste } from 'lucide-react';
+import { Plus, ClipboardPaste, Maximize2, Minimize2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface NewClipDialogProps {
   groups: Group[];
@@ -27,6 +28,8 @@ export function NewClipDialog({ groups, onCreateClip }: NewClipDialogProps) {
   const [content, setContent] = useState('');
   const [groupId, setGroupId] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handlePasteFromClipboard = async () => {
     try {
@@ -38,8 +41,8 @@ export function NewClipDialog({ groups, onCreateClip }: NewClipDialogProps) {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!content.trim()) {
       toast.error('Content is required');
       return;
@@ -51,6 +54,7 @@ export function NewClipDialog({ groups, onCreateClip }: NewClipDialogProps) {
       setTitle('');
       setContent('');
       setGroupId(undefined);
+      setIsFullscreen(false);
       setOpen(false);
       toast.success('Clip created!');
     } catch (error) {
@@ -66,8 +70,20 @@ export function NewClipDialog({ groups, onCreateClip }: NewClipDialogProps) {
       setTitle('');
       setContent('');
       setGroupId(undefined);
+      setIsFullscreen(false);
     }
     setOpen(newOpen);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Enter to save, Shift+Enter for new line
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (content.trim()) {
+        handleSubmit();
+      }
+    }
+    // Shift+Enter allows default textarea behavior (new line)
   };
 
   return (
@@ -76,12 +92,29 @@ export function NewClipDialog({ groups, onCreateClip }: NewClipDialogProps) {
         <Plus className="h-4 w-4 mr-2" />
         New Clip
       </DialogTrigger>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Create New Clip</DialogTitle>
+      <DialogContent className={cn(
+        'flex flex-col transition-all duration-200',
+        isFullscreen 
+          ? 'max-w-[95vw] w-[95vw] h-[90vh] max-h-[90vh]' 
+          : 'max-w-lg max-h-[85vh]'
+      )}>
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle className="flex items-center justify-between pr-8">
+            <span>Create New Clip</span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+            >
+              {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            </Button>
+          </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 space-y-4">
+          <div className="space-y-2 flex-shrink-0">
             <Label htmlFor="newTitle">Title (optional)</Label>
             <Input
               id="newTitle"
@@ -91,30 +124,40 @@ export function NewClipDialog({ groups, onCreateClip }: NewClipDialogProps) {
             />
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
+          <div className="space-y-2 flex-1 min-h-0 flex flex-col">
+            <div className="flex items-center justify-between flex-shrink-0">
               <Label htmlFor="newContent">Content</Label>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handlePasteFromClipboard}
-              >
-                <ClipboardPaste className="h-4 w-4 mr-1" />
-                Paste
-              </Button>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">
+                  Enter to save, Shift+Enter for new line
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handlePasteFromClipboard}
+                >
+                  <ClipboardPaste className="h-4 w-4 mr-1" />
+                  Paste
+                </Button>
+              </div>
             </div>
             <Textarea
+              ref={textareaRef}
               id="newContent"
               value={content}
               onChange={(e) => setContent(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="Paste your content here..."
-              className="min-h-[150px] font-mono"
+              className={cn(
+                'font-mono resize-none flex-1',
+                isFullscreen ? 'min-h-[300px]' : 'min-h-[150px] max-h-[40vh]'
+              )}
               required
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 flex-shrink-0">
             <Label>Group (optional)</Label>
             <select
               value={groupId || ''}
@@ -130,11 +173,11 @@ export function NewClipDialog({ groups, onCreateClip }: NewClipDialogProps) {
             </select>
           </div>
 
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2 flex-shrink-0 pt-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading || !content.trim()}>
               {isLoading ? 'Creating...' : 'Create Clip'}
             </Button>
           </div>

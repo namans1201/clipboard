@@ -7,7 +7,8 @@ import { ClipGrid } from '@/components/clip-grid';
 import { ClipGridSkeleton } from '@/components/clip-card-skeleton';
 import { SearchBar } from '@/components/search-bar';
 import { Button } from '@/components/ui/button';
-import { Trash2 } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Trash2, Folder, RotateCcw, X } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -17,12 +18,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function TrashPage() {
   const { clips, loading, restore, permanentDelete } = useClips({ showTrashed: true });
-  const { groups } = useGroups();
+  const { groups, deletedGroups, restoreGroup, permanentDeleteGroup } = useGroups();
   const [searchQuery, setSearchQuery] = useState('');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [confirmDeleteGroupId, setConfirmDeleteGroupId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -35,6 +38,12 @@ export default function TrashPage() {
         clip.title?.toLowerCase().includes(query)
     );
   }, [clips, searchQuery]);
+
+  const filteredDeletedGroups = useMemo(() => {
+    if (!searchQuery.trim()) return deletedGroups;
+    const query = searchQuery.toLowerCase();
+    return deletedGroups.filter((group) => group.name.toLowerCase().includes(query));
+  }, [deletedGroups, searchQuery]);
 
   const handleSearchChange = (value: string) => {
     startTransition(() => {
@@ -58,6 +67,31 @@ export default function TrashPage() {
     }
   };
 
+  const handleRestoreGroup = async (id: string) => {
+    try {
+      await restoreGroup(id);
+      toast.success('Group restored');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to restore group');
+    }
+  };
+
+  const handlePermanentDeleteGroup = async () => {
+    if (!confirmDeleteGroupId || isDeleting) return;
+
+    setIsDeleting(true);
+
+    try {
+      await permanentDeleteGroup(confirmDeleteGroupId);
+      setConfirmDeleteGroupId(null);
+      toast.success('Group permanently deleted');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to delete group');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-6">
@@ -74,6 +108,10 @@ export default function TrashPage() {
     );
   }
 
+  const hasDeletedClips = clips.length > 0;
+  const hasDeletedGroups = deletedGroups.length > 0;
+  const hasAnyDeleted = hasDeletedClips || hasDeletedGroups;
+
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 smooth-scroll">
       <div className="flex items-center gap-3">
@@ -82,7 +120,7 @@ export default function TrashPage() {
       </div>
 
       <p className="text-sm sm:text-base text-muted-foreground">
-        Deleted clips can be restored or permanently deleted.
+        Deleted items can be restored or permanently deleted.
       </p>
 
       <div className="max-w-md">
@@ -91,15 +129,77 @@ export default function TrashPage() {
 
       {isPending && <div className="h-1 bg-primary/20 animate-pulse rounded" />}
 
-      <ClipGrid
-        clips={filteredClips}
-        groups={groups}
-        onRestore={restore}
-        onPermanentDelete={setConfirmDeleteId}
-        isTrashView
-        emptyMessage={searchQuery ? 'No trashed clips match your search' : 'Trash is empty'}
-      />
+      {!hasAnyDeleted ? (
+        <div className="flex items-center justify-center h-64 text-muted-foreground">
+          Trash is empty
+        </div>
+      ) : (
+        <Tabs defaultValue="clips" className="w-full">
+          <TabsList>
+            <TabsTrigger value="clips" className="gap-2">
+              Clips {hasDeletedClips && <span className="text-xs bg-muted px-1.5 rounded">{filteredClips.length}</span>}
+            </TabsTrigger>
+            <TabsTrigger value="groups" className="gap-2">
+              Groups {hasDeletedGroups && <span className="text-xs bg-muted px-1.5 rounded">{filteredDeletedGroups.length}</span>}
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="clips" className="mt-4">
+            <ClipGrid
+              clips={filteredClips}
+              groups={groups}
+              onRestore={restore}
+              onPermanentDelete={setConfirmDeleteId}
+              isTrashView
+              emptyMessage={searchQuery ? 'No trashed clips match your search' : 'No deleted clips'}
+              searchQuery={searchQuery}
+            />
+          </TabsContent>
+          
+          <TabsContent value="groups" className="mt-4">
+            {filteredDeletedGroups.length === 0 ? (
+              <div className="flex items-center justify-center h-64 text-muted-foreground">
+                {searchQuery ? 'No trashed groups match your search' : 'No deleted groups'}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                {filteredDeletedGroups.map((group) => (
+                  <Card key={group.id} className="group">
+                    <CardContent className="p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <Folder className="h-5 w-5 text-muted-foreground shrink-0" />
+                        <span className="font-medium truncate">{group.name}</span>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleRestoreGroup(group.id)}
+                          title="Restore"
+                        >
+                          <RotateCcw className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive"
+                          onClick={() => setConfirmDeleteGroupId(group.id)}
+                          title="Delete permanently"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      )}
 
+      {/* Confirm delete clip dialog */}
       <Dialog open={!!confirmDeleteId} onOpenChange={() => setConfirmDeleteId(null)}>
         <DialogContent>
           <DialogHeader>
@@ -113,6 +213,27 @@ export default function TrashPage() {
               Cancel
             </Button>
             <Button variant="destructive" onClick={handlePermanentDelete} disabled={isDeleting}>
+              {isDeleting ? 'Deleting...' : 'Delete Permanently'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm delete group dialog */}
+      <Dialog open={!!confirmDeleteGroupId} onOpenChange={() => setConfirmDeleteGroupId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Group Permanently?</DialogTitle>
+            <DialogDescription>
+              This action cannot be undone. This group will be permanently deleted. 
+              Clips in this group will become ungrouped (not deleted).
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmDeleteGroupId(null)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handlePermanentDeleteGroup} disabled={isDeleting}>
               {isDeleting ? 'Deleting...' : 'Delete Permanently'}
             </Button>
           </DialogFooter>

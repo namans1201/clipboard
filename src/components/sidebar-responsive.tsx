@@ -21,14 +21,16 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { groups, createGroup } = useGroups();
   const [newGroupName, setNewGroupName] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
 
-  const handlePanicLock = async () => {
+  const handleLock = async () => {
     const supabase = createClient();
 
     try {
@@ -43,21 +45,27 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
   const handleCreateGroup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newGroupName.trim()) return;
+    if (!newGroupName.trim() || isCreating) return;
     
+    setIsCreating(true);
     try {
       await createGroup(newGroupName.trim());
       setNewGroupName('');
       setIsDialogOpen(false);
+      toast.success('Group created!');
     } catch (error) {
-      console.error('Failed to create group:', error);
+      // Error toast is handled in useGroups for duplicate names
+      if (error instanceof Error && error.message !== 'Duplicate group name') {
+        toast.error('Failed to create group');
+      }
+    } finally {
+      setIsCreating(false);
     }
   };
 
   const navItems = [
     { href: '/', label: 'All Clips', icon: Clipboard },
     { href: '/pinned', label: 'Pinned', icon: Pin },
-    { href: '/trash', label: 'Trash', icon: Trash2 },
   ];
 
   return (
@@ -113,8 +121,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 <DialogHeader>
                   <DialogTitle>Create New Group</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleCreateGroup} className="space-y-4">
-                  <div>
+                <form onSubmit={handleCreateGroup} className="space-y-4 mt-2">
+                  <div className="space-y-2">
                     <Label htmlFor="group-name">Group Name</Label>
                     <Input
                       id="group-name"
@@ -128,7 +136,9 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                     <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                       Cancel
                     </Button>
-                    <Button type="submit">Create</Button>
+                    <Button type="submit" disabled={isCreating || !newGroupName.trim()}>
+                      {isCreating ? 'Creating...' : 'Create'}
+                    </Button>
                   </div>
                 </form>
               </DialogContent>
@@ -159,15 +169,29 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </ScrollArea>
 
-      <div className="p-3 border-t">
+      {/* Bottom section with Trash and Lock */}
+      <div className="p-3 border-t space-y-2">
+        <Link
+          href="/trash"
+          onClick={onNavigate}
+          className={cn(
+            'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors w-full',
+            pathname === '/trash'
+              ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+              : 'hover:bg-sidebar-accent/50 text-sidebar-foreground'
+          )}
+        >
+          <Trash2 className="h-4 w-4 flex-shrink-0" />
+          <span>Trash</span>
+        </Link>
         <Button
           variant="destructive"
           size="sm"
           className="w-full"
-          onClick={handlePanicLock}
+          onClick={handleLock}
         >
           <Lock className="h-4 w-4 mr-2" />
-          Panic Lock
+          Lock
         </Button>
       </div>
     </>

@@ -175,6 +175,7 @@ export default function GroupPage() {
         onDelete={softDelete}
         onClipClick={handleClipClick}
         emptyMessage={searchQuery ? 'No clips match your search' : 'No clips in this group yet'}
+        searchQuery={searchQuery}
       />
 
       <ClipEditor
