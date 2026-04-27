@@ -7,6 +7,7 @@ import { ClipGrid } from '@/components/clip-grid';
 import { ClipGridSkeleton } from '@/components/clip-card-skeleton';
 import { ClipEditor } from '@/components/clip-editor';
 import { SearchBar } from '@/components/search-bar';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { Clip } from '@/types/database';
 import { Pin } from 'lucide-react';
 
@@ -61,8 +62,13 @@ export default function PinnedPage() {
         <h1 className="text-xl sm:text-2xl font-semibold">Pinned Clips</h1>
       </div>
 
-      <div className="max-w-md">
-        <SearchBar value={searchQuery} onChange={handleSearchChange} />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex-1 max-w-md">
+          <SearchBar value={searchQuery} onChange={handleSearchChange} />
+        </div>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+        </div>
       </div>
 
       {isPending && <div className="h-1 bg-primary/20 animate-pulse rounded" />}

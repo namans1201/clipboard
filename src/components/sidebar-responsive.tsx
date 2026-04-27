@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Clipboard, Pin, Trash2, FolderPlus, Lock, Plus, Menu } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { TrashButton } from '@/components/trash-button';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -171,20 +172,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </ScrollArea>
 
       {/* Bottom section with Trash and Lock */}
-      <div className="p-3 border-t space-y-2">
-        <Link
-          href="/trash"
-          onClick={onNavigate}
-          className={cn(
-            'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors w-full',
-            pathname === '/trash'
-              ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-              : 'hover:bg-sidebar-accent/50 text-sidebar-foreground'
-          )}
-        >
-          <Trash2 className="h-4 w-4 flex-shrink-0" />
-          <span>Trash</span>
-        </Link>
+      <div className="p-3 border-t space-y-4">
+        <TrashButton onClick={onNavigate} />
         <div className="flex items-center gap-2">
           <Button
             variant="destructive"
@@ -195,7 +184,6 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             <Lock className="h-4 w-4 mr-2" />
             Lock
           </Button>
-          <ThemeToggle />
         </div>
       </div>
     </>

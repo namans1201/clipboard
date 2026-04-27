@@ -8,6 +8,7 @@ import { ClipGridSkeleton } from '@/components/clip-card-skeleton';
 import { SearchBar } from '@/components/search-bar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { Trash2, Folder, RotateCcw, X } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -123,8 +124,13 @@ export default function TrashPage() {
         Deleted items can be restored or permanently deleted.
       </p>
 
-      <div className="max-w-md">
-        <SearchBar value={searchQuery} onChange={handleSearchChange} />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex-1 max-w-md">
+          <SearchBar value={searchQuery} onChange={handleSearchChange} />
+        </div>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+        </div>
       </div>
 
       {isPending && <div className="h-1 bg-primary/20 animate-pulse rounded" />}
