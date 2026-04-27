@@ -7,7 +7,6 @@ import { ClipGrid } from '@/components/clip-grid';
 import { ClipGridSkeleton } from '@/components/clip-card-skeleton';
 import { ClipEditor } from '@/components/clip-editor';
 import { SearchBar } from '@/components/search-bar';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { Clip } from '@/types/database';
 import { Pin } from 'lucide-react';
 
@@ -67,7 +66,6 @@ export default function PinnedPage() {
           <SearchBar value={searchQuery} onChange={handleSearchChange} />
         </div>
         <div className="flex items-center gap-2">
-          <ThemeToggle />
         </div>
       </div>
 

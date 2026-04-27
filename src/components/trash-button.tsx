@@ -58,7 +58,7 @@ export function TrashButton({ onClick }: { onClick?: () => void }) {
           background-color: var(--bg-color);
           border-radius: 10px;
           overflow: hidden;
-          transition: all 0.3s;
+          transition: all 0.15s;
         }
 
         .trash-button.active {
@@ -69,7 +69,7 @@ export function TrashButton({ onClick }: { onClick?: () => void }) {
           transform: translateX(33px);
           color: var(--font-color);
           font-weight: 600;
-          transition: all 0.3s;
+          transition: all 0.15s;
         }
 
         .trash-button .button__icon {
@@ -81,7 +81,7 @@ export function TrashButton({ onClick }: { onClick?: () => void }) {
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: all 0.3s;
+          transition: all 0.15s;
           right: 0;
         }
 

@@ -8,7 +8,6 @@ import { ClipGridSkeleton } from '@/components/clip-card-skeleton';
 import { SearchBar } from '@/components/search-bar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { Trash2, Folder, RotateCcw, X } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -129,7 +128,6 @@ export default function TrashPage() {
           <SearchBar value={searchQuery} onChange={handleSearchChange} />
         </div>
         <div className="flex items-center gap-2">
-          <ThemeToggle />
         </div>
       </div>
 

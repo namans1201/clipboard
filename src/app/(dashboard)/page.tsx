@@ -8,7 +8,6 @@ import { ClipGridSkeleton } from '@/components/clip-card-skeleton';
 import { ClipEditor } from '@/components/clip-editor';
 import { NewClipDialog } from '@/components/new-clip-dialog';
 import { SearchBar } from '@/components/search-bar';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { ErrorDisplay } from '@/components/error-display';
 import { Clip } from '@/types/database';
 
@@ -66,7 +65,6 @@ export default function HomePage() {
           <SearchBar value={searchQuery} onChange={handleSearchChange} />
         </div>
         <div className="flex items-center gap-2">
-          <ThemeToggle />
           <NewClipDialog groups={groups} onCreateClip={createClip} />
         </div>
       </div>

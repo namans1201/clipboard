@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   description: "Multi-device clipboard manager for secure, organized text storage",
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.svg", type: "image/svg+xml" },
       { url: "/icon-16.png", sizes: "16x16", type: "image/png" },
       { url: "/icon-32.png", sizes: "32x32", type: "image/png" },
       { url: "/icon-48.png", sizes: "48x48", type: "image/png" },
@@ -53,6 +53,8 @@ export const viewport: Viewport = {
   ],
 };
 
+import { ThemeToggle } from "@/components/theme-toggle";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -72,6 +74,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <ThemeToggle />
         </ThemeProvider>
       </body>
     </html>

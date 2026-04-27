@@ -64,7 +64,7 @@ export function Sidebar() {
       <div className="p-4 border-b">
         <Link href="/" className="flex items-center gap-3 transition-transform hover:scale-105">
           <Image 
-            src="/logo.png" 
+            src="/logo.svg" 
             alt="Clipboard Easy Logo" 
             width={32} 
             height={32}
