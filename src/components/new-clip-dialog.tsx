@@ -88,7 +88,7 @@ export function NewClipDialog({ groups, onCreateClip }: NewClipDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger className="inline-flex items-center justify-center h-10 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
+      <DialogTrigger className="inline-flex items-center justify-center h-10 rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground shadow-md hover:bg-primary/90 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all">
         <Plus className="h-4 w-4 mr-2" />
         New Clip
       </DialogTrigger>

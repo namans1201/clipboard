@@ -274,7 +274,7 @@ export function ClipEditor({
 
               <div>
                 <Label className="text-muted-foreground text-xs">Content</Label>
-                <pre className="mt-1 p-4 bg-muted rounded-md whitespace-pre-wrap break-words font-mono text-sm max-h-[400px] overflow-auto">
+                <pre className="mt-1 p-4 bg-muted rounded-xl whitespace-pre-wrap break-words font-mono text-sm max-h-[400px] overflow-auto leading-relaxed">
                   {savedClip.content}
                 </pre>
               </div>

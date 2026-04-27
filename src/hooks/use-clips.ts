@@ -56,6 +56,30 @@ export function useClips(options: UseClipsOptions = {}) {
     fetchClips();
   }, [fetchClips]);
 
+  // ── Realtime subscription ──────────────────────────────────────────
+  // Listens for INSERT / UPDATE / DELETE on the clips table so the UI
+  // stays in sync across tabs and devices without manual refresh.
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel('clips-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'clips' },
+        () => {
+          // Re-fetch to keep the list consistent with server state.
+          // This is lightweight because Supabase returns only the
+          // rows matching our filters.
+          fetchClips();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchClips]);
+
   const createClip = async (content: string, title?: string, groupId?: string) => {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -76,7 +100,7 @@ export function useClips(options: UseClipsOptions = {}) {
 
     if (error) throw error;
     
-    // Optimistic update
+    // Optimistic update — realtime will also fire but this gives instant feedback
     if (data) {
       setClips(prev => [data as Clip, ...prev]);
     }
