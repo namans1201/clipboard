@@ -37,7 +37,34 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protected routes - redirect to login if not authenticated
+  // --- Server-enforced public-device session expiry ---
+  // If the user stamped a public_session_expires_at timestamp on login and it
+  // has now passed, sign them out immediately and redirect to login.
+  // This enforcement runs on *every* server request, so no client-side bypass
+  // is possible — even if the browser tab stays open indefinitely.
+  if (user) {
+    const expiresAt: number | undefined =
+      user.user_metadata?.public_session_expires_at;
+    const isPublicDeviceSession: boolean =
+      user.user_metadata?.is_public_device === true;
+
+    if (isPublicDeviceSession && expiresAt && Date.now() > expiresAt) {
+      // Sign out server-side and redirect to login with an explanatory param.
+      await supabase.auth.signOut();
+      const url = request.nextUrl.clone();
+      url.pathname = '/login';
+      url.searchParams.set('reason', 'session_expired');
+      const redirectResponse = NextResponse.redirect(url);
+      // Clear the auth cookie so the browser session is fully terminated.
+      redirectResponse.cookies.set(SUPABASE_AUTH_COOKIE_NAME, '', {
+        maxAge: 0,
+        path: '/',
+      });
+      return redirectResponse;
+    }
+  }
+
+  // Protected routes – redirect to login if not authenticated
   if (
     !user &&
     !request.nextUrl.pathname.startsWith('/login') &&

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient, resetClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,25 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clipboard, Lock } from 'lucide-react';
 import { toast } from 'sonner';
+
+/** Absolute session lifetime for public-device logins (15 minutes). */
+const PUBLIC_DEVICE_SESSION_DURATION_MS = 15 * 60 * 1000;
+
+/**
+ * Inner component that reads query params — must live inside a <Suspense>
+ * boundary because Next.js App Router requires that for useSearchParams().
+ */
+function SessionExpiredNotice() {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('reason') === 'session_expired') {
+      toast.warning('Your session has expired. Please sign in again.');
+    }
+  }, [searchParams]);
+
+  return null;
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -23,14 +42,16 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Set public device flag BEFORE creating client
+      // Persist the public-device flag in sessionStorage BEFORE creating the
+      // Supabase client so that the custom cookie handler picks the right
+      // storage strategy (session-only vs persistent).
       if (isPublicDevice) {
         sessionStorage.setItem('is_public_device', 'true');
       } else {
         sessionStorage.removeItem('is_public_device');
       }
 
-      // Reset client to pick up new storage settings
+      // Reset cached client so it is re-created with the correct cookie options.
       resetClient();
       const supabase = createClient();
 
@@ -40,6 +61,29 @@ export default function LoginPage() {
       });
 
       if (error) throw error;
+
+      // --- Server-side expiry stamping ---
+      // Stamp an absolute expiry timestamp into user_metadata.
+      // The Next.js middleware reads this on every request and forces a
+      // sign-out if the token is past its expiry — even if the browser tab
+      // stays open indefinitely. The useSessionHeartbeat hook enforces the
+      // same constraint on the client side (checked every 60 s).
+      if (isPublicDevice) {
+        await supabase.auth.updateUser({
+          data: {
+            is_public_device: true,
+            public_session_expires_at: Date.now() + PUBLIC_DEVICE_SESSION_DURATION_MS,
+          },
+        });
+      } else {
+        // Clear any stale public-device metadata from a previous session.
+        await supabase.auth.updateUser({
+          data: {
+            is_public_device: false,
+            public_session_expires_at: null,
+          },
+        });
+      }
 
       toast.success('Logged in successfully!');
       router.push('/');
@@ -54,6 +98,11 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      {/* Suspense boundary required by Next.js for useSearchParams() */}
+      <Suspense fallback={null}>
+        <SessionExpiredNotice />
+      </Suspense>
+
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
@@ -61,7 +110,7 @@ export default function LoginPage() {
               <Clipboard className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl">Clipboard Easy</CardTitle>
+          <CardTitle className="text-2xl">Clipboard</CardTitle>
           <CardDescription>
             Sign in to access your clips across devices
           </CardDescription>
@@ -109,7 +158,7 @@ export default function LoginPage() {
                   This is a public/shared device
                 </label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Session will expire on inactivity and tab close
+                  Session auto-expires after 15 min of absolute time and on tab close
                 </p>
               </div>
             </div>

@@ -31,14 +31,15 @@ function ClipGridComponent({
 }: ClipGridProps) {
   if (clips.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 text-muted-foreground">
-        {emptyMessage}
+      <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-2">
+        <span className="text-4xl">📋</span>
+        <span className="text-sm">{emptyMessage}</span>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 contain-layout items-start">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
       {clips.map((clip) => (
         <ClipCard
           key={clip.id}

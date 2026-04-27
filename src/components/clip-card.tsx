@@ -121,10 +121,9 @@ function ClipCardComponent({
     setShowQuickView(true);
   };
 
-  // Dynamic content preview - less content = shorter card
-  const contentLength = clip.content.length;
-  const maxPreviewLength = contentLength < 100 ? contentLength : 200;
-  const previewContent = clip.content.slice(0, maxPreviewLength) + (clip.content.length > maxPreviewLength ? '...' : '');
+  // Show more content — clips are informational, give them room to breathe
+  const maxPreviewLength = 300;
+  const previewContent = clip.content.slice(0, maxPreviewLength) + (clip.content.length > maxPreviewLength ? '…' : '');
   
   const cardLabel = `Clip: ${clip.title || previewContent.substring(0, 50)}${clip.content.length > 50 ? '...' : ''}`;
 
@@ -135,22 +134,16 @@ function ClipCardComponent({
     }
   };
 
-  // Determine card height class based on content
-  const getContentHeightClass = () => {
-    if (contentLength < 50) return 'max-h-12';
-    if (contentLength < 100) return 'max-h-20';
-    if (contentLength < 200) return 'max-h-28';
-    return 'max-h-32';
-  };
-
   return (
     <>
       <Card
         data-testid="clip-card"
         className={cn(
-          'relative group transition-colors focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 h-fit',
-          onClick && 'cursor-pointer hover:border-primary/50',
-          clip.is_pinned && 'border-primary/30 bg-primary/5'
+          'relative group transition-all duration-200 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 h-fit',
+          'hover:shadow-lg hover:-translate-y-0.5',
+          'contain-content',
+          onClick && 'cursor-pointer hover:border-primary/40',
+          clip.is_pinned && 'border-primary/30 bg-primary/5 dark:bg-primary/10'
         )}
         onClick={() => onClick?.(clip)}
         onKeyDown={handleKeyDown}
@@ -159,12 +152,12 @@ function ClipCardComponent({
         aria-label={cardLabel}
       >
         {/* Top right icons - Pin indicator and Quick View */}
-        <div className="absolute top-2 right-2 flex items-center gap-1">
+        <div className="absolute top-2.5 right-2.5 flex items-center gap-1">
           {!isTrashView && (
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
+              className="h-7 w-7 rounded-full opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
               onClick={handleQuickView}
               title="Quick view"
             >
@@ -178,13 +171,17 @@ function ClipCardComponent({
 
         <CardContent className="p-4 pt-3">
           {clip.title && (
-            <h3 className="font-medium mb-2 truncate pr-16">
+            <h3 className="font-semibold mb-2 truncate pr-16 text-sm">
               {searchQuery ? highlightText(clip.title, searchQuery) : clip.title}
             </h3>
           )}
+          {/* Pre-formatted content block — preserves original whitespace, line
+              breaks, indentation, and code formatting exactly as the user
+              pasted it.  Uses font-mono so code is readable. */}
           <pre className={cn(
-            'text-sm text-muted-foreground whitespace-pre-wrap break-words font-mono bg-muted/50 p-2 rounded overflow-hidden',
-            getContentHeightClass()
+            'text-xs text-muted-foreground whitespace-pre-wrap break-words font-mono',
+            'bg-muted/40 dark:bg-muted/20 p-3 rounded-lg overflow-hidden',
+            'max-h-36 leading-relaxed'
           )}>
             {searchQuery ? highlightText(previewContent, searchQuery) : previewContent}
           </pre>
@@ -193,7 +190,7 @@ function ClipCardComponent({
         <CardFooter className="p-3 sm:p-4 pt-0 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 flex-wrap min-w-0">
             {group && (
-              <Badge variant="secondary" className="text-xs shrink-0">
+              <Badge variant="secondary" className="text-xs shrink-0 rounded-full">
                 {group.name}
               </Badge>
             )}
@@ -204,29 +201,29 @@ function ClipCardComponent({
 
           <div
             className={cn(
-              'flex items-center gap-1 transition-opacity will-change-opacity shrink-0',
+              'flex items-center gap-0.5 transition-opacity will-change-opacity shrink-0',
               isTrashView ? 'opacity-100' : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100'
             )}
           >
             {isTrashView ? (
               <>
-                <Button variant="ghost" size="icon" className="h-9 w-9 sm:h-8 sm:w-8 touch-manipulation" onClick={handleRestore} title="Restore" disabled={isWorking}>
-                  <RotateCcw className="h-4 w-4" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full touch-manipulation" onClick={handleRestore} title="Restore" disabled={isWorking}>
+                  <RotateCcw className="h-3.5 w-3.5" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-9 w-9 sm:h-8 sm:w-8 text-destructive touch-manipulation" onClick={handlePermanentDelete} title="Delete permanently" disabled={isWorking}>
-                  <X className="h-4 w-4" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-destructive touch-manipulation" onClick={handlePermanentDelete} title="Delete permanently" disabled={isWorking}>
+                  <X className="h-3.5 w-3.5" />
                 </Button>
               </>
             ) : (
               <>
-                <Button variant="ghost" size="icon" className="h-9 w-9 sm:h-8 sm:w-8 touch-manipulation" onClick={handleCopy} title="Copy" disabled={isWorking}>
-                  <Copy className="h-4 w-4" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full touch-manipulation" onClick={handleCopy} title="Copy" disabled={isWorking}>
+                  <Copy className="h-3.5 w-3.5" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-9 w-9 sm:h-8 sm:w-8 touch-manipulation" onClick={handleTogglePin} title={clip.is_pinned ? 'Unpin' : 'Pin'} disabled={isWorking}>
-                  <Pin className={cn('h-4 w-4', clip.is_pinned && 'fill-current')} />
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full touch-manipulation" onClick={handleTogglePin} title={clip.is_pinned ? 'Unpin' : 'Pin'} disabled={isWorking}>
+                  <Pin className={cn('h-3.5 w-3.5', clip.is_pinned && 'fill-current')} />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-9 w-9 sm:h-8 sm:w-8 text-destructive touch-manipulation" onClick={handleDelete} title="Delete" disabled={isWorking}>
-                  <Trash2 className="h-4 w-4" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-destructive touch-manipulation" onClick={handleDelete} title="Delete" disabled={isWorking}>
+                  <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </>
             )}
@@ -241,15 +238,15 @@ function ClipCardComponent({
             <DialogTitle>{clip.title || 'Clip Preview'}</DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-auto">
-            <pre className="p-4 bg-muted rounded-md whitespace-pre-wrap break-words font-mono text-sm">
+            <pre className="p-4 bg-muted rounded-xl whitespace-pre-wrap break-words font-mono text-sm leading-relaxed">
               {clip.content}
             </pre>
           </div>
           <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setShowQuickView(false)}>
+            <Button variant="outline" className="rounded-full" onClick={() => setShowQuickView(false)}>
               Close
             </Button>
-            <Button onClick={handleCopy}>
+            <Button className="rounded-full" onClick={handleCopy}>
               <Copy className="h-4 w-4 mr-2" />
               Copy
             </Button>

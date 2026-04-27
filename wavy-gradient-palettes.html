@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wavy Gradient Palettes</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Cormorant+Garamond:wght@300;600&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0e0e0f;
+  font-family: 'Syne', sans-serif;
+  color: #fff;
+  padding: 40px 32px 64px;
+}
+h1 {
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #444;
+  margin-bottom: 40px;
+  text-align: center;
+}
+.section-title {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #555;
+  margin: 48px 0 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #1e1e1e;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 16px;
+}
+.card {
+  height: 200px;
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.card:hover { transform: translateY(-3px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+
+canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 18px 22px;
+  z-index: 2;
+}
+.card-name {
+  font-size: 17px;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  margin-bottom: 7px;
+  line-height: 1;
+}
+.swatches {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.swatch {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  padding: 3px 9px 3px 5px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.swatch:hover { opacity: 0.75; }
+.swatch-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dark-text .card-name { color: rgba(255,255,255,0.9); text-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+.dark-text .swatch { background: rgba(0,0,0,0.25); color: rgba(255,255,255,0.7); }
+.light-text .card-name { color: rgba(30,15,5,0.85); }
+.light-text .swatch { background: rgba(255,255,255,0.35); color: rgba(30,15,5,0.65); }
+
+.copied-toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #fff;
+  color: #111;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  padding: 10px 22px;
+  border-radius: 40px;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+  z-index: 999;
+}
+.copied-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<h1>Wavy Gradient Palettes</h1>
+
+<div class="section-title">Dark Mode</div>
+<div class="grid" id="darkGrid"></div>
+
+<div class="section-title">Light Mode</div>
+<div class="grid" id="lightGrid"></div>
+
+<div class="copied-toast" id="toast">Copied!</div>
+
+<script>
+// ─── PALETTE DEFINITIONS ─────────────────────────────────────────────────────
+const darkPalettes = [
+  { name: "Midnight Gold",   base:[23,26,34],    mid:[28,28,34],   shadow:[14,16,20],   peak:[60,46,24],   codes:["#171A22","#202024","#D4A840"] },
+  { name: "Deep Plum Ember", base:[26,18,32],    mid:[34,24,37],   shadow:[16,10,20],   peak:[80,40,70],   codes:["#1A1220","#221825","#B450A0"] },
+  { name: "Arctic Slate",    base:[17,24,32],    mid:[24,32,48],   shadow:[10,15,22],   peak:[30,70,100],  codes:["#111820","#182030","#3CA0E6"] },
+  { name: "Forest Obsidian", base:[18,26,21],    mid:[24,30,26],   shadow:[10,16,13],   peak:[28,80,50],   codes:["#121A15","#181E1A","#3CB464"] },
+  { name: "Volcanic Onyx",   base:[28,20,16],    mid:[32,24,21],   shadow:[18,12,10],   peak:[100,55,28],  codes:["#1C1410","#201815","#DC5A28"] },
+  { name: "Indigo Void",     base:[18,18,30],    mid:[26,26,46],   shadow:[10,10,18],   peak:[55,42,120],  codes:["#12121E","#1A1A2E","#6450F0"] },
+  { name: "Copper Smoke",    base:[24,22,20],    mid:[32,28,24],   shadow:[14,13,12],   peak:[90,68,32],   codes:["#181614","#201C18","#B47832"] },
+  { name: "Teal Abyss",      base:[14,26,28],    mid:[21,32,34],   shadow:[8,16,18],    peak:[20,100,95],  codes:["#0E1A1C","#152022","#1EB4AA"] },
+];
+
+const lightPalettes = [
+  { name: "Warm Parchment",  base:[252,234,209], mid:[245,220,168],shadow:[218,190,150], peak:[255,250,240], codes:["#FCEAD1","#E3B473","#C88214"] },
+  { name: "Blush Rose",      base:[252,232,228], mid:[245,201,192],shadow:[215,170,162], peak:[255,245,243], codes:["#FCE8E4","#F5C9C0","#D25050"] },
+  { name: "Mint Linen",      base:[228,245,237], mid:[191,232,210],shadow:[160,205,180], peak:[244,255,248], codes:["#E4F5ED","#BFE8D2","#14A05A"] },
+  { name: "Sky Pearl",       base:[228,240,252], mid:[189,214,245],shadow:[158,186,218], peak:[242,248,255], codes:["#E4F0FC","#BDD6F5","#286EDC"] },
+  { name: "Apricot Haze",    base:[253,236,213], mid:[249,200,144],shadow:[218,168,110], peak:[255,248,238], codes:["#FDECD5","#F9C890","#DC7814"] },
+  { name: "Lavender Mist",   base:[240,236,252], mid:[216,204,245],shadow:[186,172,218], peak:[248,246,255], codes:["#F0ECFC","#D8CCF5","#7846DC"] },
+  { name: "Sand Dune",       base:[245,237,224], mid:[224,201,166],shadow:[192,170,135], peak:[254,250,244], codes:["#F5EDE0","#E0C9A6","#A06E1E"] },
+  { name: "Coral Silk",      base:[252,232,220], mid:[245,184,154],shadow:[215,155,125], peak:[255,246,240], codes:["#FCE8DC","#F5B89A","#D25028"] },
+];
+
+// ─── WAVE RENDERER ───────────────────────────────────────────────────────────
+function renderWave(canvas, palette, isDark) {
+  const W = canvas.width, H = canvas.height;
+  const ctx = canvas.getContext('2d');
+  const img = ctx.createImageData(W, H);
+  const d = img.data;
+
+  const { base, mid, shadow, peak } = palette;
+
+  // Wave parameters — tuned to match the reference image
+  const waves = [
+    { freq: 0.018, amp: 0.38, speed: 0,    angle: 0.55 },
+    { freq: 0.012, amp: 0.28, speed: 0,    angle: 0.48 },
+    { freq: 0.028, amp: 0.18, speed: 0,    angle: 0.60 },
+    { freq: 0.008, amp: 0.14, speed: 0,    angle: 0.42 },
+  ];
+
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      // Combine multiple sine waves at a diagonal
+      let h = 0;
+      waves.forEach(w => {
+        const proj = x * Math.cos(w.angle) + y * Math.sin(w.angle);
+        h += Math.sin(proj * w.freq) * w.amp;
+      });
+      // Normalize h from roughly [-1,1] → [0,1]
+      h = (h + 1) * 0.5;
+      h = Math.max(0, Math.min(1, h));
+
+      // Simulate light: peaks bright, valleys shadowed, smooth falloff
+      let r, g, b;
+      if (h > 0.62) {
+        // Peak highlight
+        const t = (h - 0.62) / 0.38;
+        r = lerp(base[0], peak[0], t);
+        g = lerp(base[1], peak[1], t);
+        b = lerp(base[2], peak[2], t);
+      } else if (h > 0.35) {
+        // Mid base
+        const t = (h - 0.35) / 0.27;
+        r = lerp(mid[0], base[0], t);
+        g = lerp(mid[1], base[1], t);
+        b = lerp(mid[2], base[2], t);
+      } else {
+        // Shadow valley
+        const t = h / 0.35;
+        r = lerp(shadow[0], mid[0], t);
+        g = lerp(shadow[1], mid[1], t);
+        b = lerp(shadow[2], mid[2], t);
+      }
+
+      const i = (y * W + x) * 4;
+      d[i]   = Math.round(r);
+      d[i+1] = Math.round(g);
+      d[i+2] = Math.round(b);
+      d[i+3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+// ─── CARD BUILDER ────────────────────────────────────────────────────────────
+function buildCard(palette, isDark) {
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 760;
+  canvas.height = 400;
+  card.appendChild(canvas);
+
+  // Render async so browser doesn't freeze
+  setTimeout(() => renderWave(canvas, palette, isDark), 0);
+
+  const overlay = document.createElement('div');
+  overlay.className = 'card-overlay ' + (isDark ? 'dark-text' : 'light-text');
+
+  const name = document.createElement('div');
+  name.className = 'card-name';
+  name.textContent = palette.name;
+  overlay.appendChild(name);
+
+  const labels = ['base', 'accent', 'glow'];
+  const swatchRow = document.createElement('div');
+  swatchRow.className = 'swatches';
+  palette.codes.forEach((hex, i) => {
+    const sw = document.createElement('div');
+    sw.className = 'swatch';
+    sw.innerHTML = `<div class="swatch-dot" style="background:${hex};${!isDark?'border:1px solid rgba(0,0,0,0.12)':''}"></div>${hex}`;
+    sw.onclick = () => copyHex(hex);
+    swatchRow.appendChild(sw);
+  });
+  overlay.appendChild(swatchRow);
+  card.appendChild(overlay);
+
+  return card;
+}
+
+function copyHex(hex) {
+  navigator.clipboard.writeText(hex).catch(() => {});
+  const toast = document.getElementById('toast');
+  toast.textContent = hex + ' copied';
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1600);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+const darkGrid = document.getElementById('darkGrid');
+const lightGrid = document.getElementById('lightGrid');
+
+darkPalettes.forEach(p => darkGrid.appendChild(buildCard(p, true)));
+lightPalettes.forEach(p => lightGrid.appendChild(buildCard(p, false)));
+</script>
+</body>
+</html>
