@@ -1,32 +1,26 @@
 'use client';
 
 import { useTheme } from 'next-themes';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 export function TrashButton({ onClick }: { onClick?: () => void }) {
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line
     setMounted(true);
   }, []);
 
   const isDark = mounted && theme === 'dark';
   const isActive = pathname === '/trash';
 
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (onClick) onClick();
-    router.push('/trash');
-  };
-
   return (
     <>
-      <button type="button" className={`trash-button ${isActive ? 'active' : ''}`} onClick={handleClick}>
+      <Link href="/trash" className={`trash-button ${isActive ? 'active' : ''}`} onClick={onClick}>
         <span className="button__text">Trash</span>
         <span className="button__icon">
           <svg xmlns="http://www.w3.org/2000/svg" width={512} viewBox="0 0 512 512" height={512} className="svg">
@@ -39,7 +33,7 @@ export function TrashButton({ onClick }: { onClick?: () => void }) {
             <line y2={400} y1={176} x2={320} x1={328} style={{ fill: 'none', stroke: isDark ? '#fff' : '#323232', strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 32 }} />
           </svg>
         </span>
-      </button>
+      </Link>
       <style dangerouslySetInnerHTML={{__html: `
         .trash-button {
           --main-focus: #2d8cf0;
@@ -58,7 +52,8 @@ export function TrashButton({ onClick }: { onClick?: () => void }) {
           background-color: var(--bg-color);
           border-radius: 10px;
           overflow: hidden;
-          transition: all 0.15s;
+          transition: all 0.05s;
+          text-decoration: none;
         }
 
         .trash-button.active {
@@ -69,7 +64,7 @@ export function TrashButton({ onClick }: { onClick?: () => void }) {
           transform: translateX(33px);
           color: var(--font-color);
           font-weight: 600;
-          transition: all 0.15s;
+          transition: all 0.05s;
         }
 
         .trash-button .button__icon {
@@ -81,7 +76,7 @@ export function TrashButton({ onClick }: { onClick?: () => void }) {
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: all 0.15s;
+          transition: all 0.05s;
           right: 0;
         }
 
