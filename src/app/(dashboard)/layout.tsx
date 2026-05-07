@@ -3,6 +3,7 @@
 import { Sidebar } from '@/components/sidebar-responsive';
 import { BlurOverlay } from '@/components/blur-overlay';
 import { Toaster } from '@/components/ui/sonner';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { useAutoLock } from '@/hooks/use-auto-lock';
 import { useSessionHeartbeat } from '@/hooks/use-session-heartbeat';
 
@@ -26,6 +27,7 @@ export default function DashboardLayout({
         </main>
       </div>
       <Toaster position="bottom-right" />
+      <ThemeToggle />
     </BlurOverlay>
   );
 }

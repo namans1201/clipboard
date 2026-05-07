@@ -2,134 +2,101 @@
 
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
+import styled from 'styled-components';
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    setMounted(true);
-  }, []);
+  useEffect(() => setMounted(true), []);
 
-  if (!mounted) {
-    return <div style={{ width: '64px', height: '34px' }} />;
-  }
+  if (!mounted) return null;
 
-  const isDark = theme === 'dark';
+  const isDark = resolvedTheme === 'dark';
 
   return (
-    <div className="fixed top-4 right-4 z-50">
-      <label className="switch">
-        <span className="sun"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="#ffd43b"><circle r={5} cy={12} cx={12} /><path d="m21 13h-1a1 1 0 0 1 0-2h1a1 1 0 0 1 0 2zm-17 0h-1a1 1 0 0 1 0-2h1a1 1 0 0 1 0 2zm13.66-5.66a1 1 0 0 1 -.66-.29 1 1 0 0 1 0-1.41l.71-.71a1 1 0 1 1 1.41 1.41l-.71.71a1 1 0 0 1 -.75.29zm-12.02 12.02a1 1 0 0 1 -.71-.29 1 1 0 0 1 0-1.41l.71-.66a1 1 0 0 1 1.41 1.41l-.71.71a1 1 0 0 1 -.7.24zm6.36-14.36a1 1 0 0 1 -1-1v-1a1 1 0 0 1 2 0v1a1 1 0 0 1 -1 1zm0 17a1 1 0 0 1 -1-1v-1a1 1 0 0 1 2 0v1a1 1 0 0 1 -1 1zm-5.66-14.66a1 1 0 0 1 -.7-.29l-.71-.71a1 1 0 0 1 1.41-1.41l.71.71a1 1 0 0 1 0 1.41 1 1 0 0 1 -.71.29zm12.02 12.02a1 1 0 0 1 -.7-.29l-.66-.71a1 1 0 0 1 1.36-1.36l.71.71a1 1 0 0 1 0 1.41 1 1 0 0 1 -.71.24z" /></g></svg></span>
-        <span className="moon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="m223.5 32c-123.5 0-223.5 100.3-223.5 224s100 224 223.5 224c60.6 0 115.5-24.2 155.8-63.4 5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6-96.9 0-175.5-78.8-175.5-176 0-65.8 36-123.1 89.3-153.3 6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z" /></svg></span>   
-        <input type="checkbox" className="input" checked={isDark} onChange={() => setTheme(isDark ? 'light' : 'dark')} />
-        <span className="slider" />
-      </label>
-      <style dangerouslySetInnerHTML={{__html: `
-        .switch {
-          font-size: 17px;
-          position: relative;
-          display: inline-block;
-          width: 64px;
-          height: 34px;
-          flex-shrink: 0;
-        }
-
-        .switch input {
-          opacity: 0;
-          width: 0;
-          height: 0;
-        }
-
-        .slider {
-          position: absolute;
-          cursor: pointer;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color: #73C0FC;
-          transition: .4s;
-          border-radius: 30px;
-        }
-
-        .slider:before {
-          position: absolute;
-          content: "";
-          height: 30px;
-          width: 30px;
-          border-radius: 20px;
-          left: 2px;
-          bottom: 2px;
-          z-index: 2;
-          background-color: #e8e8e8;
-          transition: .4s;
-        }
-
-        .sun svg {
-          position: absolute;
-          top: 6px;
-          left: 36px;
-          z-index: 1;
-          width: 24px;
-          height: 24px;
-        }
-
-        .moon svg {
-          fill: #73C0FC;
-          position: absolute;
-          top: 5px;
-          left: 5px;
-          z-index: 1;
-          width: 24px;
-          height: 24px;
-        }
-
-        .sun svg {
-          animation: rotate 15s linear infinite;
-        }
-
-        @keyframes rotate {
-          0% {
-            transform: rotate(0);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-
-        .moon svg {
-          animation: tilt 5s linear infinite;
-        }
-
-        @keyframes tilt {
-          0% {
-            transform: rotate(0deg);
-          }
-          25% {
-            transform: rotate(-10deg);
-          }
-          75% {
-            transform: rotate(10deg);
-          }
-          100% {
-            transform: rotate(0deg);
-          }
-        }
-
-        .input:checked + .slider {
-          background-color: #183153;
-        }
-
-        .input:focus + .slider {
-          box-shadow: 0 0 1px #183153;
-        }
-
-        .input:checked + .slider:before {
-          transform: translateX(30px);
-        }
-      `}} />
-    </div>
+    <Wrapper>
+      <div
+        className={`tdnn${isDark ? '' : ' day'}`}
+        onClick={() => setTheme(isDark ? 'light' : 'dark')}
+        role="button"
+        tabIndex={0}
+        aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+        onKeyDown={(e) => e.key === 'Enter' && setTheme(isDark ? 'light' : 'dark')}
+      >
+        <div className={`moon${isDark ? '' : ' sun'}`} />
+      </div>
+    </Wrapper>
   );
 }
+
+const Wrapper = styled.div`
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  z-index: 50;
+
+  .tdnn {
+    /* scale the whole toggle via font-size */
+    font-size: 18%;
+    cursor: pointer;
+    position: relative;
+    height: var(--toggleHeight, 16em);
+    width:  var(--toggleWidth,  30em);
+    border-radius: var(--toggleHeight, 16em);
+    transition: all 500ms ease-in-out;
+    background: #423966;
+    outline: none;
+  }
+
+  .tdnn:focus-visible {
+    box-shadow: 0 0 0 3px rgba(100, 160, 255, 0.6);
+  }
+
+  .day {
+    background: #FFBF71;
+  }
+
+  .moon {
+    position: absolute;
+    display: block;
+    border-radius: 50%;
+    transition: all 400ms ease-in-out;
+
+    top: 3em;
+    left: 3em;
+    transform: rotate(-75deg);
+    width:  10em;
+    height: 10em;
+    background: #423966;
+    box-shadow:
+      3em 2.5em 0 0em #D9FBFF inset,
+      rgba(255,255,255,.1)  0em  -7em 0 -4.5em,
+      rgba(255,255,255,.1)  3em   7em 0 -4.5em,
+      rgba(255,255,255,.1)  2em  13em 0 -4em,
+      rgba(255,255,255,.1)  6em   2em 0 -4.1em,
+      rgba(255,255,255,.1)  8em   8em 0 -4.5em,
+      rgba(255,255,255,.1)  6em  13em 0 -4.5em,
+      rgba(255,255,255,.1) -4em   7em 0 -4.5em,
+      rgba(255,255,255,.1) -1em  10em 0 -4.5em;
+  }
+
+  .sun {
+    top: 4.5em;
+    left: 18em;
+    transform: rotate(0deg);
+    width:  7em;
+    height: 7em;
+    background: #fff;
+    box-shadow:
+      3em 3em 0 5em #fff inset,
+      0    -5em 0 -2.7em #fff,
+      3.5em -3.5em 0 -3em  #fff,
+      5em    0    0 -2.7em #fff,
+      3.5em  3.5em 0 -3em  #fff,
+      0      5em  0 -2.7em #fff,
+      -3.5em 3.5em 0 -3em  #fff,
+      -5em   0    0 -2.7em #fff,
+      -3.5em -3.5em 0 -3em #fff;
+  }
+`;
