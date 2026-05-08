@@ -174,7 +174,7 @@ npm run build
 ## 📁 New Files Created
 
 ```
-clipboard_easy/
+clipclap/
 ├── tests/e2e/
 │   └── app.spec.ts              # E2E test suite
 ├── playwright.config.ts         # Test configuration

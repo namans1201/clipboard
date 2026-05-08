@@ -1,7 +1,7 @@
 {
-  "name": "Clipboard Easy",
-  "short_name": "ClipEasy",
-  "description": "Multi-device clipboard manager for secure, organized text storage",
+  "name": "ClipClap",
+  "short_name": "ClipClap",
+  "description": "Multi-device ClipClap app for secure, organized text storage",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
@@ -26,7 +26,7 @@
     {
       "name": "New Clip",
       "short_name": "New",
-      "description": "Create a new clipboard note",
+      "description": "Create a new ClipClap note",
       "url": "/?new=true",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }

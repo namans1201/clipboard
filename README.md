@@ -1,4 +1,4 @@
-# Clipboard Easy
+# ClipClap
 
 A professional-grade, multi-device clipboard web app for securely storing and organizing text snippets, code, and notes.
 
@@ -177,7 +177,7 @@ jobs:
 ## 📁 Project Structure
 
 ```
-clipboard_easy/
+clipclap/
 ├── src/
 │   ├── app/
 │   │   ├── (auth)/login/        # Login page with device mode

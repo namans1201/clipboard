@@ -5,7 +5,7 @@
 1. Go to [supabase.com](https://supabase.com) and sign in
 2. Click "New Project"
 3. Fill in:
-   - Project name: `clipboard-easy` (or your choice)
+   - Project name: `clipclap` (or your choice)
    - Database password: Choose a strong password (save it!)
    - Region: Choose closest to you
 4. Click "Create new project" and wait for it to initialize (~2 minutes)

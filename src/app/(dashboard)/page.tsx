@@ -9,6 +9,7 @@ import { ClipEditor } from '@/components/clip-editor';
 import { NewClipDialog } from '@/components/new-clip-dialog';
 import { SearchBar } from '@/components/search-bar';
 import { ErrorDisplay } from '@/components/error-display';
+import { CompactToggle } from '@/components/compact-toggle';
 import { Clip } from '@/types/database';
 
 export default function HomePage() {
@@ -16,6 +17,7 @@ export default function HomePage() {
   const { groups, error: groupsError } = useGroups();
   const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [compact, setCompact] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const filteredClips = useMemo(() => {
@@ -54,18 +56,20 @@ export default function HomePage() {
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 smooth-scroll">
       {(clipsError || groupsError) && (
-        <ErrorDisplay 
-          error={clipsError || groupsError} 
+        <ErrorDisplay
+          error={clipsError || groupsError}
           onRetry={refetchClips}
         />
       )}
-      
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex-1 max-w-md">
+
+      {/* ── Top bar: Search | + button | view toggle ── */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 min-w-0">
           <SearchBar value={searchQuery} onChange={handleSearchChange} />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3 shrink-0">
           <NewClipDialog groups={groups} onCreateClip={createClip} />
+          <CompactToggle checked={compact} onChange={setCompact} />
         </div>
       </div>
 
@@ -79,6 +83,7 @@ export default function HomePage() {
         onClipClick={handleClipClick}
         emptyMessage={searchQuery ? 'No clips match your search' : 'No clips yet. Create your first clip!'}
         searchQuery={searchQuery}
+        compact={compact}
       />
 
       <ClipEditor

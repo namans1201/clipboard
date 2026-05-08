@@ -25,8 +25,8 @@ const instrumentSans = Instrument_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Clipboard",
-  description: "Multi-device clipboard manager for secure, organized text storage",
+  title: "ClipClap",
+  description: "Multi-device ClipClap app for secure, organized text storage",
   icons: {
     icon: [
       { url: "/icon.svg", type: "image/svg+xml" },
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Clipboard",
+    title: "ClipClap",
   },
   formatDetection: {
     telephone: false,

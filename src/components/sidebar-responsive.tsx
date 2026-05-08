@@ -76,13 +76,13 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <Link href="/" className="flex items-center gap-3 transition-transform hover:scale-105" onClick={onNavigate}>
           <Image 
             src="/logo.svg" 
-            alt="Clipboard Easy Logo" 
-            width={32} 
+            alt="ClipClap Logo"
+            width={32}
             height={32}
             className="rounded"
             priority
           />
-          <span className="font-semibold text-lg">Clipboard</span>
+          <span className="font-semibold text-lg">ClipClap</span>
         </Link>
       </div>
 

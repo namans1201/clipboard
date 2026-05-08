@@ -26,6 +26,7 @@ interface ClipCardProps {
   onClick?: (clip: Clip) => void;
   isTrashView?: boolean;
   searchQuery?: string;
+  compact?: boolean;
 }
 
 function getErrorMessage(error: unknown, fallback: string) {
@@ -54,6 +55,7 @@ function ClipCardComponent({
   onClick,
   isTrashView = false,
   searchQuery = '',
+  compact = false,
 }: ClipCardProps) {
   const group = groups.find((g) => g.id === clip.group_id);
   const [isWorking, setIsWorking] = useState(false);
@@ -169,23 +171,37 @@ function ClipCardComponent({
           )}
         </div>
 
-        <CardContent className="p-4 pt-3">
-          {clip.title && (
-            <h3 className="font-semibold mb-2 truncate pr-16 text-sm">
-              {searchQuery ? highlightText(clip.title, searchQuery) : clip.title}
-            </h3>
-          )}
-          {/* Pre-formatted content block — preserves original whitespace, line
-              breaks, indentation, and code formatting exactly as the user
-              pasted it.  Uses font-mono so code is readable. */}
-          <pre className={cn(
-            'text-xs text-muted-foreground whitespace-pre-wrap break-words font-mono',
-            'bg-muted/40 dark:bg-muted/20 p-3 rounded-lg overflow-hidden',
-            'max-h-36 leading-relaxed'
-          )}>
-            {searchQuery ? highlightText(previewContent, searchQuery) : previewContent}
-          </pre>
-        </CardContent>
+        {compact ? (
+          /* ── Compact / list row ── */
+          <CardContent className="p-3 flex items-center gap-3">
+            <div className="flex-1 min-w-0">
+              {clip.title && (
+                <p className="font-semibold text-sm truncate">
+                  {searchQuery ? highlightText(clip.title, searchQuery) : clip.title}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground truncate font-mono">
+                {searchQuery ? highlightText(previewContent.slice(0, 120), searchQuery) : previewContent.slice(0, 120)}
+                {clip.content.length > 120 ? '…' : ''}
+              </p>
+            </div>
+          </CardContent>
+        ) : (
+          <CardContent className="p-4 pt-3">
+            {clip.title && (
+              <h3 className="font-semibold mb-2 truncate pr-16 text-sm">
+                {searchQuery ? highlightText(clip.title, searchQuery) : clip.title}
+              </h3>
+            )}
+            <pre className={cn(
+              'text-xs text-muted-foreground whitespace-pre-wrap break-words font-mono',
+              'bg-muted/40 dark:bg-muted/20 p-3 rounded-lg overflow-hidden',
+              'max-h-36 leading-relaxed'
+            )}>
+              {searchQuery ? highlightText(previewContent, searchQuery) : previewContent}
+            </pre>
+          </CardContent>
+        )}
 
         <CardFooter className="p-3 sm:p-4 pt-0 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 flex-wrap min-w-0">
