@@ -291,3 +291,12 @@ button, .cursor-pointer {
 ::view-transition-image-pair(root) {
   isolation: isolate;
 }
+
+/* ── Dashboard content-area gradient ── */
+.dashboard-main {
+  background-image: linear-gradient(60deg, #29323c 0%, #485563 100%);
+}
+
+.dark .dashboard-main {
+  background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}

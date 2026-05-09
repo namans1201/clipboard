@@ -1,0 +1,48 @@
+.plusBtn {
+  width: 54px;
+  height: 54px;
+  border: none;
+  border-radius: 50%;
+  background: #ebecf0;
+  color: #000;
+  font-size: 36px;
+  font-weight: 300;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    8px 8px 12px -2px rgba(72, 79, 96, 0.4),
+    -6px -6px 12px -1px rgba(255, 255, 255, 1);
+  transition: box-shadow 0.25s ease, background 0.25s ease;
+  flex-shrink: 0;
+}
+
+.plusBtn:hover {
+  box-shadow: none;
+}
+
+.plusBtn:active {
+  box-shadow:
+    inset -4px -4px 6px -1px rgba(255, 255, 255, 1),
+    inset 2px 2px 8px -1px rgba(72, 79, 96, 0.5);
+}
+
+:global(.dark) .plusBtn {
+  background: #1e2a3a;
+  color: #c8d8ec;
+  box-shadow:
+    8px 8px 12px -2px rgba(0, 0, 0, 0.5),
+    -6px -6px 12px -1px rgba(35, 55, 90, 0.4);
+}
+
+:global(.dark) .plusBtn:hover {
+  box-shadow: none;
+}
+
+:global(.dark) .plusBtn:active {
+  box-shadow:
+    inset -4px -4px 6px -1px rgba(35, 55, 90, 0.4),
+    inset 2px 2px 8px -1px rgba(0, 0, 0, 0.6);
+}

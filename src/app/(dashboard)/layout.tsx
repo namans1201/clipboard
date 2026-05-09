@@ -21,7 +21,7 @@ export default function DashboardLayout({
       <BlurOverlay>
         <div className="flex h-screen overflow-hidden">
           <Sidebar />
-          <main className="flex-1 overflow-auto w-full">
+            <main className="flex-1 overflow-auto w-full">
             {children}
           </main>
         </div>
