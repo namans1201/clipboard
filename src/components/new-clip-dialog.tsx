@@ -89,10 +89,8 @@ export function NewClipDialog({ groups, onCreateClip }: NewClipDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <button className={styles.plusBtn} title="Add New" aria-label="Add New Clip">
-          +
-        </button>
+      <DialogTrigger className={styles.plusBtn} title="Add New" aria-label="Add New Clip">
+        +
       </DialogTrigger>
       <DialogContent className={cn(
         'flex flex-col transition-all duration-200',

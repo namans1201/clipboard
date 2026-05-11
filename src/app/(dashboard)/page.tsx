@@ -4,6 +4,7 @@ import { useMemo, useTransition, useState } from 'react';
 import { useClips } from '@/hooks/use-clips';
 import { useGroups } from '@/hooks/use-groups';
 import { useCompact } from '@/contexts/compact-context';
+import { useDebounce } from '@/hooks/use-debounce';
 import { ClipGrid } from '@/components/clip-grid';
 import { ClipEditor } from '@/components/clip-editor';
 import { NewClipDialog } from '@/components/new-clip-dialog';
@@ -18,17 +19,18 @@ export default function HomePage() {
   const { compact } = useCompact();
   const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedQuery = useDebounce(searchQuery, 200);
   const [isPending, startTransition] = useTransition();
 
   const filteredClips = useMemo(() => {
-    if (!searchQuery.trim()) return clips;
-    const query = searchQuery.toLowerCase();
+    if (!debouncedQuery.trim()) return clips;
+    const query = debouncedQuery.toLowerCase();
     return clips.filter(
       (clip) =>
         clip.content.toLowerCase().includes(query) ||
         clip.title?.toLowerCase().includes(query)
     );
-  }, [clips, searchQuery]);
+  }, [clips, debouncedQuery]);
 
   const handleClipClick = (clip: Clip) => {
     startTransition(() => setSelectedClip(clip));
@@ -47,9 +49,9 @@ export default function HomePage() {
       )}
 
       {/* ── Top bar: Search + New Clip ── */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 pr-[200px]">
         {/* search bar — fills available space up to a max */}
-        <div className="flex-1 min-w-0 max-w-lg">
+        <div className="flex-1 min-w-0">
           <SearchBar value={searchQuery} onChange={handleSearchChange} />
         </div>
         {/* + button immediately after the bar */}
@@ -64,8 +66,8 @@ export default function HomePage() {
         onTogglePin={togglePin}
         onDelete={softDelete}
         onClipClick={handleClipClick}
-        emptyMessage={searchQuery ? 'No clips match your search' : 'No clips yet. Create your first clip!'}
-        searchQuery={searchQuery}
+        emptyMessage={debouncedQuery ? 'No clips match your search' : 'No clips yet. Create your first clip!'}
+        searchQuery={debouncedQuery}
         compact={compact}
       />
 

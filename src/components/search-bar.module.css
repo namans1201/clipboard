@@ -15,16 +15,16 @@
 
 /* ── dark theme overrides ── */
 :global(.dark) .container {
-  --surface:      #141e2e;
-  --border-col:   rgba(60,160,230,0.1);
-  --shadow-out-a: rgba(6,10,18,0.7);
-  --shadow-out-b: rgba(30,48,75,0.45);
-  --inset-a:      rgba(5,9,16,0.6);
-  --inset-b:      rgba(30,50,80,0.35);
+  --surface:      #232e40;
+  --border-col:   rgba(60,160,230,0.18);
+  --shadow-out-a: rgba(10,14,22,0.75);
+  --shadow-out-b: rgba(40,62,95,0.4);
+  --inset-a:      rgba(8,12,20,0.65);
+  --inset-b:      rgba(38,58,88,0.35);
   --icon-fill:    #c8d8ec;
-  --icon-surface: #141e2e;
+  --icon-surface: #232e40;
   --text-color:   #e2eaf3;
-  --placeholder:  #4a6888;
+  --placeholder:  #5a7898;
 }
 
 /* ── outer pill ── */

@@ -24,7 +24,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { groups, createGroup } = useGroups();
@@ -66,12 +65,13 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           onClick={onNavigate}
         >
           <Image
-            src="/logo.svg"
+            src="/logo.png"
             alt="ClipClap Logo"
-            width={32}
-            height={32}
-            className="rounded"
+            width={52}
+            height={52}
+            className="w-14 h-14 object-contain bg-transparent border-0 shadow-none"
             priority
+            unoptimized
           />
           <span className="font-semibold text-lg">ClipClap</span>
         </Link>
