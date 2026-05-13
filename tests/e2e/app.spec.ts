@@ -38,6 +38,66 @@ test.describe('Login page', () => {
 });
 
 // ─────────────────────────────────────────────
+// PROFILE BUTTON (no auth needed, login page only)
+// ─────────────────────────────────────────────
+test.describe('Profile button on login page', () => {
+  test('GET /api/profile returns valid profile data', async ({ request }) => {
+    const res = await request.get('/api/profile');
+    expect(res.ok()).toBeTruthy();
+    const body = await res.json();
+    expect(body.name).toBeTruthy();
+    expect(body.tagline).toBeTruthy();
+    expect(body.avatar).toMatch(/^\//);
+    expect(body.socials).toBeTruthy();
+  });
+
+  test('FAB is visible at bottom-right of login page', async ({ page }) => {
+    await page.goto('/login');
+    const fab = page.getByTestId('profile-button');
+    await expect(fab).toBeVisible();
+    const box = await fab.boundingBox();
+    const vp  = page.viewportSize();
+    expect(box && vp).toBeTruthy();
+    // bottom-right anchored
+    expect(box!.x + box!.width).toBeGreaterThan(vp!.width  - 80);
+    expect(box!.y + box!.height).toBeGreaterThan(vp!.height - 80);
+  });
+
+  test('clicking the FAB opens the profile modal with card', async ({ page }) => {
+    await page.goto('/login');
+    await page.getByTestId('profile-button').click();
+    await expect(page.getByTestId('profile-modal')).toBeVisible();
+    await expect(page.getByTestId('profile-card')).toBeVisible();
+    // name from API is rendered
+    await expect(page.getByText(/Naman Shrimal/i)).toBeVisible();
+  });
+
+  test('close button dismisses the modal', async ({ page }) => {
+    await page.goto('/login');
+    await page.getByTestId('profile-button').click();
+    await expect(page.getByTestId('profile-modal')).toBeVisible();
+    await page.getByTestId('profile-close').click();
+    await expect(page.getByTestId('profile-modal')).not.toBeVisible();
+  });
+
+  test('Escape key closes the modal', async ({ page }) => {
+    await page.goto('/login');
+    await page.getByTestId('profile-button').click();
+    await expect(page.getByTestId('profile-modal')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('profile-modal')).not.toBeVisible();
+  });
+
+  test('profile FAB does NOT appear on protected routes (redirects to /login but still only login shows it)', async ({ page }) => {
+    // /pinned redirects to /login (we already tested this elsewhere)
+    // The FAB should be present because we ended up on /login
+    await page.goto('/pinned');
+    await expect(page).toHaveURL('/login');
+    await expect(page.getByTestId('profile-button')).toBeVisible();
+  });
+});
+
+// ─────────────────────────────────────────────
 // AUTHENTICATION
 // ─────────────────────────────────────────────
 test.describe('Authentication', () => {

@@ -25,6 +25,13 @@
 - Clips in deleted group become ungrouped (ON DELETE SET NULL)
 - Duplicate group name prevention (case-insensitive)
 
+### Visitor / About
+- ProfileButton FAB at bottom-right of login page → opens a modal with the developer profile card (avatar, name, socials)
+- Theme-aware colours (white/dark-navy bg, dark/light text & border) via CSS custom properties
+- `/api/profile` public GET endpoint with schema validation and cache headers
+- Closes on Esc, overlay click, or × button
+- 6 Playwright tests covering API, visibility, open/close, modal lifecycle
+
 ### UI
 - Neumorphic design across light + dark mode
 - Day/night theme toggle (landscape image pill, skeuomorphic)

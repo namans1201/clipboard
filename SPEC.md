@@ -10,6 +10,12 @@ ClipClap is a personal clipboard manager web app that lets users save, organise,
 
 ## Features
 
+### Visitor / About
+| Feature | Status |
+|---------|--------|
+| Profile-card popup on login page (bottom-right FAB → modal w/ avatar, name, socials; theme-aware colours; closes on Esc / overlay click / × button) | ✅ done |
+| `GET /api/profile` public endpoint (validation + cache headers; no auth) | ✅ done |
+
 ### Auth & Session
 | Feature | Status |
 |---------|--------|
@@ -98,7 +104,12 @@ ClipClap is a personal clipboard manager web app that lets users save, organise,
 | created_at | timestamptz | Auto-set |
 
 ## API Contracts
-No custom API routes. All data access goes through the Supabase JS SDK directly from the browser, protected by Row Level Security (RLS) policies on each table.
+
+| Method | Path | Auth | Response | Notes |
+|--------|------|------|----------|-------|
+| GET | `/api/profile` | No (public) | `{ name, tagline, avatar, socials: { website?, github?, linkedin? } }` | Visitor profile shown on login page. Validation on every read; cached `s-maxage=3600`. |
+
+All other data access goes through the Supabase JS SDK directly from the browser, protected by Row Level Security (RLS) policies on each table.
 
 ## Frontend Pages
 | Path | Component | Auth Required | Status |

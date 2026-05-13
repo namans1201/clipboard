@@ -65,10 +65,12 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Protected routes – redirect to login if not authenticated
+  // Public exceptions: /login, /auth, and /api/profile (visitor-facing profile card)
   if (
     !user &&
     !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/auth')
+    !request.nextUrl.pathname.startsWith('/auth') &&
+    !request.nextUrl.pathname.startsWith('/api/profile')
   ) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';

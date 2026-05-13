@@ -6,6 +6,7 @@ import { useTheme } from 'next-themes';
 import { createClient, resetClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { Lock } from 'lucide-react';
+import { ProfileButton } from '@/components/profile-button';
 import styles from './login.module.css';
 
 const PUBLIC_DEVICE_SESSION_DURATION_MS = 15 * 60 * 1000;
@@ -181,6 +182,9 @@ export default function LoginPage() {
           </form>
         </div>
       </div>
+
+      {/* ── Bottom-right profile FAB → opens developer profile card ── */}
+      <ProfileButton />
     </div>
   );
 }

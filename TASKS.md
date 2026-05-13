@@ -38,6 +38,7 @@
 
 ## Done ✅ (last 10)
 
+- [x] Add ProfileButton FAB + modal on login page (theme-aware colours, /api/profile route w/ validation, 6 Playwright tests)
 - [x] Fix nested `<button>` hydration error in NewClipDialog (asChild → direct className)
 - [x] Swap sun/moon icons in theme toggle (was reversed)
 - [x] Align all top-bar icons to same horizontal baseline (responsive top offset)

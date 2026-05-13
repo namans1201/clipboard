@@ -1,0 +1,139 @@
+/* ── Neumorphic sidebar-toggle button ── */
+.neoButton {
+  /* size + line tokens scaled from the 200px original to 44px */
+  --size:         44px;
+  --line-w:       16px;
+  --line-h:       2px;
+  --line-offset:  4px;
+  --arrow-w:      8px;
+
+  /* theme tokens — light mode defaults, dark overrides below */
+  --neo-bg:           #ececec;
+  --neo-accent:       #2d8cf0;
+  --neo-shadow-light: rgba(255, 255, 255, 0.75);
+  --neo-shadow-dark:  rgba(70, 70, 70, 0.22);
+  --neo-glow:         rgba(45, 140, 240, 0.35);
+
+  width:  var(--size);
+  height: var(--size);
+  position: fixed;
+  top: 50%;
+  left: 16rem;             /* anchored to right edge of 16rem-wide sidebar */
+  z-index: 45;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  border: 2px solid var(--neo-bg);
+  background: var(--neo-bg);
+  cursor: pointer;
+
+  /* Centre the button on the sidebar's right edge (half on, half off) */
+  transform: translate(-50%, -50%);
+
+  box-shadow:
+    -3px -3px 6px var(--neo-shadow-light),
+     3px  3px 6px var(--neo-shadow-dark);
+
+  transition:
+    left       320ms cubic-bezier(0.4, 0.0, 0.2, 1),
+    box-shadow 280ms ease,
+    background 280ms ease,
+    border-color 280ms ease;
+}
+
+/* Dark-mode palette — sidebar bg is ~#0f1620 in the app */
+:global(.dark) .neoButton {
+  --neo-bg:           #1a2538;
+  --neo-accent:       #3ca0e6;
+  --neo-shadow-light: rgba(60, 90, 140, 0.35);
+  --neo-shadow-dark:  rgba(0, 0, 0, 0.6);
+  --neo-glow:         rgba(60, 160, 230, 0.35);
+}
+
+/* Collapsed: slide the button to the screen edge so it stays fully visible */
+.neoButton[data-collapsed='true'] {
+  left: 26px;
+}
+
+/* Hide on mobile — Sheet handles the menu there */
+@media (max-width: 767px) {
+  .neoButton { display: none; }
+}
+
+.neoButton input {
+  display: none;
+}
+
+/* All three bars: explicit centre anchor so they collapse to the same axis */
+.neoButton span {
+  position: absolute;
+  width: var(--line-w);
+  height: var(--line-h);
+  left: calc(50% - var(--line-w) / 2);
+  border-radius: 10px;
+  background: var(--neo-accent);
+  box-shadow: 0 0 6px var(--neo-glow);
+  transition: 0.3s ease;
+}
+
+/* Top bar — offset above centre */
+.neoButton span:nth-of-type(1) {
+  top: 50%;
+  transform: translateY(calc(-50% - var(--line-offset)));
+  transform-origin: right center;
+}
+
+/* Middle bar — centred */
+.neoButton span:nth-of-type(2) {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Bottom bar — offset below centre */
+.neoButton span:nth-of-type(3) {
+  top: 50%;
+  transform: translateY(calc(-50% + var(--line-offset)));
+  transform-origin: right center;
+}
+
+/* Pressed / arrow state */
+.neoButton:has(input:checked) {
+  box-shadow:
+    -3px -3px 6px var(--neo-shadow-light),
+     3px  3px 6px var(--neo-shadow-dark),
+    inset -3px -3px 6px var(--neo-shadow-light),
+    inset  3px  3px 6px var(--neo-shadow-dark);
+}
+
+/* Arrow head — top diagonal */
+.neoButton input:checked ~ span:nth-of-type(1) {
+  width: var(--arrow-w);
+  left: 50%;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  transform-origin: right center;
+}
+
+/* Arrow shaft — middle bar stays */
+.neoButton input:checked ~ span:nth-of-type(2) {
+  width: var(--line-w);
+  transform: translateY(-50%);
+}
+
+/* Arrow head — bottom diagonal */
+.neoButton input:checked ~ span:nth-of-type(3) {
+  width: var(--arrow-w);
+  left: 50%;
+  top: 50%;
+  transform: translateY(-50%) rotate(-45deg);
+  transform-origin: right center;
+}
+
+/* Hover affordance */
+.neoButton:hover:not(:has(input:checked)) {
+  box-shadow:
+    -4px -4px 8px var(--neo-shadow-light),
+     4px  4px 8px var(--neo-shadow-dark);
+}

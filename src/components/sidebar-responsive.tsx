@@ -24,6 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { SidebarToggle } from '@/components/sidebar-toggle';
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { groups, createGroup } = useGroups();
@@ -175,6 +176,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 export function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed]   = useState(false);
 
   return (
     <>
@@ -193,10 +195,23 @@ export function Sidebar() {
         </SheetContent>
       </Sheet>
 
-      {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-64 border-r bg-sidebar flex-col h-screen gpu-accelerated">
+      {/* Desktop sidebar — width animates between 16rem (open) and 0 (collapsed) */}
+      <aside
+        className={cn(
+          'hidden md:flex border-r bg-sidebar flex-col h-screen gpu-accelerated overflow-hidden',
+          'transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]',
+          collapsed ? 'w-0 border-r-0' : 'w-64',
+        )}
+        aria-hidden={collapsed}
+      >
         <SidebarContent />
       </aside>
+
+      {/* Neomorphic toggle — vertically centred on the sidebar's right edge */}
+      <SidebarToggle
+        collapsed={collapsed}
+        onToggle={() => setCollapsed((c) => !c)}
+      />
     </>
   );
 }
