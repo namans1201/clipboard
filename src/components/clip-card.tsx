@@ -401,17 +401,14 @@ function ClipCardComponent({
               : filename}
           </div>
           <div className={styles.topRight}>
+            {/* Pin only — the relative-time badge moved to the bottom-left
+                of the card so it sits below the code area, out of the
+                way of the content header. */}
             <div className={styles.pinSlot}>
               {clip.is_pinned && (
                 <Pin className="h-3.5 w-3.5 text-primary fill-primary" />
               )}
             </div>
-            <span
-              className={styles.timeBadge}
-              title={new Date(clip.created_at).toLocaleString()}
-            >
-              {relativeTime}
-            </span>
           </div>
         </div>
 
@@ -426,9 +423,17 @@ function ClipCardComponent({
           </div>
         </div>
 
-        {/* Footer / actions — group badge on the left, action buttons on the right */}
+        {/* Footer / actions — time + (optional) group on the left,
+            action buttons on the right. Time anchors the bottom-left
+            corner of the card so it's always at a predictable spot. */}
         <div className={styles.actions}>
           <div className={styles.actionMeta}>
+            <span
+              className={styles.timeBadge}
+              title={new Date(clip.created_at).toLocaleString()}
+            >
+              {relativeTime}
+            </span>
             {group && (
               <Badge variant="secondary" className="text-[10px] rounded-full">
                 {group.name}

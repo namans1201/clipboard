@@ -18,7 +18,10 @@
   height: var(--size);
   position: fixed;
   top: 50%;
-  left: 16rem;             /* anchored to right edge of 16rem-wide sidebar */
+  /* Right edge of the 14rem-wide sidebar (was 16rem). Keep this in
+     lock-step with the `w-56` class on the desktop <aside> in
+     sidebar-responsive.tsx, otherwise the button drifts off the edge. */
+  left: 14rem;
   z-index: 45;
 
   display: flex;

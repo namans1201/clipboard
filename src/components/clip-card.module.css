@@ -96,17 +96,15 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-/* Top-right corner stack: pin icon + relative-time below. Absolutely
-   positioned so the title can centre against the dots without
-   reserving column space. */
+/* Top-right corner — pin icon ONLY (time moved to the bottom-left of
+   the action row so the header stays uncluttered). Absolutely positioned
+   so the centred filename can use the full header width. */
 .topRight {
   position: absolute;
-  top: 8px;
-  right: 10px;
+  top: 10px;
+  right: 12px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
+  align-items: center;
   color: var(--muted-fg);
 }
 
@@ -117,11 +115,14 @@
   justify-content: center;
 }
 
+/* Used in the bottom action row now (was top-right). Mono font + slightly
+   muted so it reads as metadata next to the action buttons. */
 .timeBadge {
-  font-size: 10px;
+  font-size: 11px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  opacity: 0.85;
+  opacity: 0.78;
   white-space: nowrap;
+  color: var(--muted-fg);
 }
 
 /* ── Code area — fills remaining height ────────────────────────────── */

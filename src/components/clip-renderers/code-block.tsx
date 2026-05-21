@@ -82,14 +82,50 @@ interface CodeBlockProps {
   className?: string;
 }
 
+/**
+ * Strip the `background` / `backgroundColor` property from every entry in
+ * a Prism style object. Some tokens in `oneLight` / `oneDark` carry their
+ * own background (e.g. atrule / attr-value / regex) which renders as
+ * visible per-token highlight rectangles. We only want the foreground
+ * colour for syntax — the card already provides the background. Cached
+ * so we don't rebuild on every render.
+ */
+type PrismStyle = Record<string, React.CSSProperties>;
+const stripBackgrounds = (() => {
+  const cache = new WeakMap<PrismStyle, PrismStyle>();
+  return (theme: PrismStyle): PrismStyle => {
+    const cached = cache.get(theme);
+    if (cached) return cached;
+    const out: PrismStyle = {};
+    for (const [selector, css] of Object.entries(theme)) {
+      if (css && typeof css === 'object') {
+        const {
+          background: _bg,
+          backgroundColor: _bgColor,
+          ...rest
+        } = css as React.CSSProperties & {
+          background?: unknown;
+          backgroundColor?: unknown;
+        };
+        out[selector] = rest;
+      } else {
+        out[selector] = css;
+      }
+    }
+    cache.set(theme, out);
+    return out;
+  };
+})();
+
 export function CodeBlock({ code, language, className }: CodeBlockProps) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
+  const style = stripBackgrounds((isDark ? oneDark : oneLight) as PrismStyle);
 
   return (
     <SyntaxHighlighter
       language={language ?? 'text'}
-      style={isDark ? oneDark : oneLight}
+      style={style}
       // We control max-height + overflow from the parent, so don't let
       // the highlighter set its own padding/margin defaults that would
       // double up against the card.
@@ -101,6 +137,9 @@ export function CodeBlock({ code, language, className }: CodeBlockProps) {
         lineHeight: 1.45,
         borderRadius: 0,
       }}
+      // Inline code element gets transparent backgrounds too — covers
+      // any per-token spans the theme might have given a background.
+      codeTagProps={{ style: { background: 'transparent' } }}
       // PreTag/CodeTag get the className so the parent's max-h-* /
       // overflow-auto / rounded utilities apply cleanly.
       PreTag={(props) => <pre {...props} className={className} />}
