@@ -5,8 +5,7 @@
   border-radius: 50%;
   background: #e2ecf8;
   color: #1a2233;
-  font-size: 36px;
-  font-weight: 300;
+  font-size: 0; /* prevents text-baseline offset; icon is geometrically centred */
   line-height: 1;
   cursor: pointer;
   display: flex;
@@ -17,6 +16,26 @@
     -5px -5px 12px -1px rgba(255, 255, 255, 0.95);
   transition: box-shadow 0.25s ease, background 0.25s ease, border-color 0.25s ease;
   flex-shrink: 0;
+}
+
+/* Centred plus icon — rotates 90° on hover */
+.plusIcon {
+  display: block;
+  width: 28px;
+  height: 28px;
+  color: currentColor;
+  transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1),
+              color      300ms ease;
+  transform-origin: center;
+}
+
+.plusBtn:hover .plusIcon {
+  transform: rotate(90deg);
+}
+
+.plusBtn:active .plusIcon {
+  transform: rotate(90deg) scale(0.92);
+  transition-duration: 120ms;
 }
 
 .plusBtn:hover {

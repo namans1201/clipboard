@@ -27,7 +27,7 @@ export default function GroupPage() {
   const params = useParams();
   const groupId = params.id as string;
   
-  const { clips, loading: clipsLoading, createClip, updateClip, togglePin, softDelete } = useClips({ groupId });
+  const { clips, loading: clipsLoading, createClip, updateClip, togglePin, toggleLock, resizeClip, softDelete } = useClips({ groupId });
   const { groups, loading: groupsLoading, updateGroup, deleteGroup } = useGroups();
   const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -174,6 +174,8 @@ export default function GroupPage() {
         clips={filteredClips}
         groups={groups}
         onTogglePin={togglePin}
+        onToggleLock={toggleLock}
+        onResize={resizeClip}
         onDelete={softDelete}
         onClipClick={handleClipClick}
         emptyMessage={searchQuery ? 'No clips match your search' : 'No clips in this group yet'}

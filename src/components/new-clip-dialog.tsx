@@ -90,7 +90,21 @@ export function NewClipDialog({ groups, onCreateClip }: NewClipDialogProps) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger className={styles.plusBtn} title="Add New" aria-label="Add New Clip">
-        +
+        {/* Centred SVG plus that rotates 90° on hover. Replaces the previous
+            text `+`, which was optically off-centre due to glyph metrics. */}
+        <svg
+          className={styles.plusIcon}
+          xmlns="http://www.w3.org/2000/svg"
+          width="28"
+          height="28"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+        >
+          <path d="M8 12H16" strokeWidth="1.8" />
+          <path d="M12 16V8" strokeWidth="1.8" />
+        </svg>
       </DialogTrigger>
       <DialogContent className={cn(
         'flex flex-col transition-all duration-200',

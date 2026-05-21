@@ -12,9 +12,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Copy, Pin, Trash2, Pencil, Check, X } from 'lucide-react';
+import { Copy, Pin, Trash2, Pencil, Check, X, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { ClipContentRenderer } from './clip-content-renderer';
+import { downloadClipAsFile } from '@/lib/file-download';
 
 interface ClipSnapshot {
   title: string;
@@ -175,6 +177,27 @@ export function ClipEditor({
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8"
+                    onClick={() => {
+                      try {
+                        const filename = downloadClipAsFile({
+                          id: clip.id,
+                          title: savedClip.title || null,
+                          content: savedClip.content,
+                        });
+                        toast.success(`Saved ${filename}`);
+                      } catch (error) {
+                        toast.error(getErrorMessage(error, 'Failed to download'));
+                      }
+                    }}
+                    title="Download as file"
+                    disabled={isWorking}
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
                     onClick={handleTogglePin}
                     title={savedClip.isPinned ? 'Unpin' : 'Pin'}
                     disabled={isWorking}
@@ -274,9 +297,16 @@ export function ClipEditor({
 
               <div>
                 <Label className="text-muted-foreground text-xs">Content</Label>
-                <pre className="mt-1 p-4 bg-muted rounded-xl whitespace-pre-wrap break-words font-mono text-sm max-h-[400px] overflow-auto leading-relaxed">
-                  {savedClip.content}
-                </pre>
+                {/* Extension-aware rendering. Falls through to a styled
+                    <pre> identical to the previous look for titleless clips
+                    or unrecognised extensions. */}
+                <div className="mt-1">
+                  <ClipContentRenderer
+                    title={savedClip.title || clip.title}
+                    content={savedClip.content}
+                    maxHeight="400px"
+                  />
+                </div>
               </div>
             </>
           )}

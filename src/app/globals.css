@@ -53,7 +53,8 @@
    base: #E4F0FC  mid: #BDD6F5  peak: #286EDC
    ═══════════════════════════════════════════════════════════════════════ */
 :root {
-  --background: #EFF5FC;
+  /* ↓ SWAPPED with --sidebar: the soft light-blue tone now lives on main. */
+  --background: #F2F7FD;
   --foreground: #1a2233;
   --card: rgba(255, 255, 255, 0.72);
   --card-foreground: #1a2233;
@@ -77,7 +78,10 @@
   --chart-4: #BDD6F5;
   --chart-5: #E4F0FC;
   --radius: 0.875rem;
-  --sidebar: rgba(242, 247, 253, 0.85);
+  /* ↓ SWAPPED with --background: the old main-area gradient is now used as
+     the sidebar paint. Consumers read --surface-gradient for the gradient
+     and --sidebar as a fallback solid. */
+  --sidebar: #EFF5FC;
   --sidebar-foreground: #1a2233;
   --sidebar-primary: #286EDC;
   --sidebar-primary-foreground: #ffffff;
@@ -85,6 +89,7 @@
   --sidebar-accent-foreground: #1a2e52;
   --sidebar-border: #C8D8EC;
   --sidebar-ring: #286EDC;
+  --surface-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -92,6 +97,7 @@
    base: #111820  mid: #182030  peak: #3CA0E6
    ═══════════════════════════════════════════════════════════════════════ */
 .dark {
+  /* ↓ SWAPPED: the old dark navy that was the sidebar is now the main bg. */
   --background: #0f1620;
   --foreground: #e2eaf3;
   --card: rgba(22, 30, 44, 0.72);
@@ -115,7 +121,9 @@
   --chart-3: #1F5E99;
   --chart-4: #182030;
   --chart-5: #111820;
-  --sidebar: rgba(15, 22, 32, 0.88);
+  /* ↓ SWAPPED: the old slate-grey gradient that lived on main is now the
+     sidebar paint (delivered via --surface-gradient below). */
+  --sidebar: #29323c;
   --sidebar-foreground: #e2eaf3;
   --sidebar-primary: #3CA0E6;
   --sidebar-primary-foreground: #0a1018;
@@ -123,6 +131,7 @@
   --sidebar-accent-foreground: #c8d8ec;
   --sidebar-border: rgba(60, 160, 230, 0.12);
   --sidebar-ring: #3CA0E6;
+  --surface-gradient: linear-gradient(60deg, #29323c 0%, #485563 100%);
 }
 
 @layer base {
@@ -135,6 +144,33 @@
   html {
     @apply font-sans scroll-smooth;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme-switch — snap, don't crossfade.
+   ───────────────────────────────────────────────────────────────────────
+   An earlier version of this app added `.theme-transition` to <html> for
+   620ms around setTheme(), forcing every element to animate 7 color-bearing
+   properties (including the expensive box-shadow) at once. With backdrop-
+   filter cards on the dashboard this pegged the GPU and produced visible
+   jank — the very "slow and laggy" feel we're now fixing.
+
+   The toggle knob's own translateX slide (in theme-toggle-dashboard.module.css)
+   still runs at 620ms cubic-bezier and carries all the motion feedback. The
+   rest of the page repaints in a single frame the moment .dark is toggled.
+
+   `.theme-switching` is added by switchTheme() in lib/theme-switch.ts for
+   two animation frames to guarantee no per-element transitions sneak in
+   during the swap.
+   ═══════════════════════════════════════════════════════════════════════ */
+html.theme-switching,
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+  animation-duration: 0.001s !important;
+  animation-delay: 0s !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -223,9 +259,15 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Smooth transitions for interactive elements */
+/* Smooth transitions for interactive elements.
+   NOTE: `transition: all` is intentionally NOT used — it animates color/
+   background-color/border-color on every theme switch, which compounds
+   across hundreds of interactive elements and causes visible jank.
+   We transition only the cheap, hover-relevant props. */
 button, a, input, textarea, select {
-  transition: all 0.15s ease-in-out;
+  transition-property: transform, opacity, box-shadow, outline-color;
+  transition-duration: 0.15s;
+  transition-timing-function: ease-in-out;
 }
 
 /* Better touch targets for mobile */

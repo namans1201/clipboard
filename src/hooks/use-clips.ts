@@ -108,7 +108,10 @@ export function useClips(options: UseClipsOptions = {}) {
     return data;
   };
 
-  const updateClip = async (id: string, updates: Partial<Pick<Clip, 'content' | 'title' | 'group_id' | 'is_pinned'>>) => {
+  const updateClip = async (
+    id: string,
+    updates: Partial<Pick<Clip, 'content' | 'title' | 'group_id' | 'is_pinned' | 'is_locked' | 'width_span' | 'height_span'>>,
+  ) => {
     const supabase = createClient();
     
     // Optimistic update
@@ -149,6 +152,22 @@ export function useClips(options: UseClipsOptions = {}) {
 
   const togglePin = async (id: string, isPinned: boolean) => {
     await updateClip(id, { is_pinned: !isPinned });
+  };
+
+  /**
+   * Persist a clip's grid spans after a corner-drag resize. Thin wrapper
+   * around updateClip so the page-level handler signature stays small.
+   */
+  const resizeClip = async (id: string, width_span: number, height_span: number) => {
+    await updateClip(id, { width_span, height_span });
+  };
+
+  /**
+   * Flip the internal-lock flag. Card UI renders a "locked cover" until
+   * unlocked — see ClipCard's locked branch.
+   */
+  const toggleLock = async (id: string, isLocked: boolean) => {
+    await updateClip(id, { is_locked: !isLocked });
   };
 
   const softDelete = async (id: string) => {
@@ -216,6 +235,8 @@ export function useClips(options: UseClipsOptions = {}) {
     createClip,
     updateClip,
     togglePin,
+    toggleLock,
+    resizeClip,
     softDelete,
     restore,
     permanentDelete,

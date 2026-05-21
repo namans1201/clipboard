@@ -11,7 +11,7 @@ import { Clip } from '@/types/database';
 import { Pin } from 'lucide-react';
 
 export default function PinnedPage() {
-  const { clips, loading, updateClip, togglePin, softDelete } = useClips({ showPinned: true });
+  const { clips, loading, updateClip, togglePin, toggleLock, resizeClip, softDelete } = useClips({ showPinned: true });
   const { groups } = useGroups();
   const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -75,6 +75,8 @@ export default function PinnedPage() {
         clips={filteredClips}
         groups={groups}
         onTogglePin={togglePin}
+        onToggleLock={toggleLock}
+        onResize={resizeClip}
         onDelete={softDelete}
         onClipClick={handleClipClick}
         emptyMessage={searchQuery ? 'No pinned clips match your search' : 'No pinned clips yet'}
