@@ -1,7 +1,7 @@
 'use client';
 
-import { Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { useState } from 'react';
+import styles from './search-bar.module.css';
 
 interface SearchBarProps {
   value: string;
@@ -9,16 +9,34 @@ interface SearchBarProps {
   placeholder?: string;
 }
 
-export function SearchBar({ value, onChange, placeholder = 'Search clips...' }: SearchBarProps) {
+export function SearchBar({
+  value,
+  onChange,
+  placeholder = 'Search Clips',
+}: SearchBarProps) {
+  const [isFocused, setIsFocused] = useState(false);
+
+  const isActive = isFocused || value.length > 0;
+
   return (
-    <div className="relative">
-      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-      <Input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="pl-10 h-10 rounded-full bg-muted/50 border-transparent focus-visible:border-ring focus-visible:bg-background"
-      />
+    <div className={styles.container}>
+      <div className={`${styles.finder}${isActive ? ` ${styles.active}` : ''}`}>
+        <div className={styles.finderOuter}>
+          <div className={styles.finderInner}>
+            <div className={styles.finderIcon} />
+            <input
+              className={styles.finderInput}
+              type="text"
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder={placeholder}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              autoComplete="off"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

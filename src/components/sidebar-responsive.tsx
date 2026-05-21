@@ -4,15 +4,15 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Clipboard, Pin, Trash2, FolderPlus, Lock, Plus, Menu } from 'lucide-react';
-import { ThemeToggle } from '@/components/theme-toggle';
+import { Clipboard, Pin, FolderPlus, Plus, Menu } from 'lucide-react';
 import { TrashButton } from '@/components/trash-button';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useGroups } from '@/hooks/use-groups';
-import { clearAuthCookies, createClient, resetClient } from '@/lib/supabase/client';
+import { useCompact } from '@/contexts/compact-context';
+import { CompactToggle } from '@/components/compact-toggle';
 import {
   Dialog,
   DialogContent,
@@ -24,31 +24,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-
+import { SidebarToggle } from '@/components/sidebar-toggle';
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { groups, createGroup } = useGroups();
+  const { compact, setCompact } = useCompact();
   const [newGroupName, setNewGroupName] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
-  const handleLock = async () => {
-    const supabase = createClient();
-
-    try {
-      await supabase.auth.signOut();
-    } finally {
-      clearAuthCookies();
-      resetClient();
-      sessionStorage.clear();
-      window.location.href = '/login';
-    }
-  };
-
   const handleCreateGroup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newGroupName.trim() || isCreating) return;
-    
     setIsCreating(true);
     try {
       await createGroup(newGroupName.trim());
@@ -56,7 +43,6 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       setIsDialogOpen(false);
       toast.success('Group created!');
     } catch (error) {
-      // Error toast is handled in useGroups for duplicate names
       if (error instanceof Error && error.message !== 'Duplicate group name') {
         toast.error('Failed to create group');
       }
@@ -66,24 +52,33 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   };
 
   const navItems = [
-    { href: '/', label: 'All Clips', icon: Clipboard },
-    { href: '/pinned', label: 'Pinned', icon: Pin },
+    { href: '/',       label: 'All Clips', icon: Clipboard },
+    { href: '/pinned', label: 'Pinned',    icon: Pin       },
   ];
 
   return (
     <>
-      <div className="p-4 border-b">
-        <Link href="/" className="flex items-center gap-3 transition-transform hover:scale-105" onClick={onNavigate}>
-          <Image 
-            src="/logo.svg" 
-            alt="Clipboard Easy Logo" 
-            width={32} 
-            height={32}
-            className="rounded"
+      {/* ── Header: logo + compact toggle ── */}
+      <div className="p-4 border-b flex items-center justify-between">
+        <Link
+          href="/"
+          className="flex items-center gap-3 transition-transform hover:scale-105"
+          onClick={onNavigate}
+        >
+          <Image
+            src="/logo.png"
+            alt="ClipClap Logo"
+            width={52}
+            height={52}
+            className="w-14 h-14 object-contain bg-transparent border-0 shadow-none"
             priority
+            unoptimized
           />
-          <span className="font-semibold text-lg">Clipboard</span>
+          <span className="font-semibold text-lg">ClipClap</span>
         </Link>
+
+        {/* grid / list view toggle */}
+        <CompactToggle checked={compact} onChange={setCompact} />
       </div>
 
       <ScrollArea className="flex-1 px-3 py-4 smooth-scroll">
@@ -139,7 +134,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                       Cancel
                     </Button>
                     <Button type="submit" disabled={isCreating || !newGroupName.trim()}>
-                      {isCreating ? 'Creating...' : 'Create'}
+                      {isCreating ? 'Creating…' : 'Create'}
                     </Button>
                   </div>
                 </form>
@@ -171,20 +166,9 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </ScrollArea>
 
-      {/* Bottom section with Trash and Lock */}
-      <div className="p-3 border-t space-y-4">
+      {/* ── Bottom: Trash only (Lock moved to top-right corner) ── */}
+      <div className="p-3 border-t">
         <TrashButton onClick={onNavigate} />
-        <div className="flex items-center gap-2">
-          <Button
-            variant="destructive"
-            size="sm"
-            className="flex-1 rounded-full"
-            onClick={handleLock}
-          >
-            <Lock className="h-4 w-4 mr-2" />
-            Lock
-          </Button>
-        </div>
       </div>
     </>
   );
@@ -192,12 +176,16 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 export function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed]   = useState(false);
 
   return (
     <>
-      {/* Mobile Menu Button */}
+      {/* Mobile hamburger */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetTrigger aria-label="Open navigation menu" className="md:hidden fixed top-4 left-4 z-50 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:opacity-50 disabled:pointer-events-none bg-background/80 backdrop-blur-sm shadow-md hover:bg-accent hover:text-accent-foreground h-10 w-10">
+        <SheetTrigger
+          aria-label="Open navigation menu"
+          className="md:hidden fixed top-4 left-4 z-50 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:opacity-50 disabled:pointer-events-none bg-background/80 backdrop-blur-sm shadow-md hover:bg-accent hover:text-accent-foreground h-10 w-10"
+        >
           <Menu className="h-5 w-5" />
         </SheetTrigger>
         <SheetContent side="left" className="p-0 w-64">
@@ -207,10 +195,23 @@ export function Sidebar() {
         </SheetContent>
       </Sheet>
 
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-64 border-r bg-sidebar flex-col h-screen gpu-accelerated">
+      {/* Desktop sidebar — width animates between 16rem (open) and 0 (collapsed) */}
+      <aside
+        className={cn(
+          'hidden md:flex border-r bg-sidebar flex-col h-screen gpu-accelerated overflow-hidden',
+          'transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]',
+          collapsed ? 'w-0 border-r-0' : 'w-64',
+        )}
+        aria-hidden={collapsed}
+      >
         <SidebarContent />
       </aside>
+
+      {/* Neomorphic toggle — vertically centred on the sidebar's right edge */}
+      <SidebarToggle
+        collapsed={collapsed}
+        onToggle={() => setCollapsed((c) => !c)}
+      />
     </>
   );
 }

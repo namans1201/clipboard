@@ -1,70 +1,86 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { createClient, resetClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-import styled from 'styled-components';
 import { Lock } from 'lucide-react';
+import { ProfileButton } from '@/components/profile-button';
+import styles from './login.module.css';
 
 const PUBLIC_DEVICE_SESSION_DURATION_MS = 15 * 60 * 1000;
 
+/* Extend Document type for View Transition API */
+type DocWithVT = Document & {
+  startViewTransition?: (cb: () => void) => { ready: Promise<void> };
+};
+
 function SessionExpiredNotice() {
   const searchParams = useSearchParams();
-
   useEffect(() => {
     if (searchParams.get('reason') === 'session_expired') {
       toast.warning('Your session has expired. Please sign in again.');
     }
   }, [searchParams]);
-
   return null;
 }
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail]               = useState('');
+  const [password, setPassword]         = useState('');
   const [isPublicDevice, setIsPublicDevice] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  const [isLoading, setIsLoading]       = useState(false);
+  const [mounted, setMounted]           = useState(false);
+  const router                          = useRouter();
+  const { resolvedTheme, setTheme }     = useTheme();
+
+  useEffect(() => setMounted(true), []);
+
+  const isDark = resolvedTheme === 'dark';
+
+  /* Moon/sun toggle with View Transition ripple */
+  const handleThemeToggle = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const nextDark = e.target.checked;
+      const label    = (e.currentTarget as HTMLElement).closest('label');
+      let x = window.innerWidth  / 2;
+      let y = window.innerHeight / 2;
+      if (label) {
+        const r = label.getBoundingClientRect();
+        x = r.left + r.width  / 2;
+        y = r.top  + r.height / 2;
+      }
+      const apply = () => setTheme(nextDark ? 'dark' : 'light');
+      const doc   = document as DocWithVT;
+      if (!doc.startViewTransition) { apply(); return; }
+      const vt = doc.startViewTransition(apply);
+      vt.ready.then(() => {
+        document.documentElement.style.setProperty('--x', `${x}px`);
+        document.documentElement.style.setProperty('--y', `${y}px`);
+      });
+    },
+    [setTheme],
+  );
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
       if (isPublicDevice) {
         sessionStorage.setItem('is_public_device', 'true');
       } else {
         sessionStorage.removeItem('is_public_device');
       }
-
       resetClient();
       const supabase = createClient();
-
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-
-      if (isPublicDevice) {
-        await supabase.auth.updateUser({
-          data: {
-            is_public_device: true,
-            public_session_expires_at: Date.now() + PUBLIC_DEVICE_SESSION_DURATION_MS,
-          },
-        });
-      } else {
-        await supabase.auth.updateUser({
-          data: {
-            is_public_device: false,
-            public_session_expires_at: null,
-          },
-        });
-      }
-
+      await supabase.auth.updateUser({
+        data: isPublicDevice
+          ? { is_public_device: true,  public_session_expires_at: Date.now() + PUBLIC_DEVICE_SESSION_DURATION_MS }
+          : { is_public_device: false, public_session_expires_at: null },
+      });
       toast.success('Logged in successfully!');
       router.push('/');
       router.refresh();
@@ -77,191 +93,98 @@ export default function LoginPage() {
   };
 
   return (
-    <StyledWrapper>
-      <div className="login-container">
-        <Suspense fallback={null}>
-          <SessionExpiredNotice />
-        </Suspense>
+    <div className={styles.wrapper}>
+      <Suspense fallback={null}>
+        <SessionExpiredNotice />
+      </Suspense>
 
-        <div className="card">
-          <div className="title">Log in</div>
-          <form className="form" onSubmit={handleLogin}>
-            <input 
-              className="input-field" 
-              name="email" 
-              placeholder="Email" 
-              type="email" 
+      {/* ── Moon / Sun theme toggle ── */}
+      <label className={styles.moonToggle} aria-label="Toggle theme">
+        {mounted && (
+          <input
+            type="checkbox"
+            checked={isDark}
+            onChange={handleThemeToggle}
+          />
+        )}
+        <div />
+      </label>
+
+      {/* ── Hero title ── */}
+      <div className={styles.titleBlock}>
+        <hr className={styles.titleHr} />
+        <section className={styles.titleSection}>
+          <div className={styles.dot} />
+          <div className={styles.dot} />
+          <div className={styles.dot} />
+          <div className={styles.dot} />
+          <h1>
+            <strong>Clip:</strong><span>:Clap</span>
+          </h1>
+        </section>
+        <hr className={styles.titleHr} />
+      </div>
+
+      {/* ── Login card ── */}
+      <div className={styles.cardWrapper}>
+        <div className={styles.flipCardFront}>
+          <div className={styles.cardTitle}>Log in</div>
+          <form className={styles.flipCardForm} onSubmit={handleLogin}>
+            <input
+              className={styles.flipCardInput}
+              name="email"
+              placeholder="Email"
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
-            <input 
-              className="input-field" 
-              name="password" 
-              placeholder="Password" 
-              type="password" 
+            <input
+              className={styles.flipCardInput}
+              name="password"
+              placeholder="Password"
+              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-            
-            <div className="shared-device">
-              <label className="shared-device__label">
-                <input 
-                  type="checkbox" 
-                  className="shared-device__checkbox" 
+
+            <div className={styles.publicDevice}>
+              <label className={styles.glCheckbox}>
+                <input
+                  className={styles.glCheckboxInput}
+                  type="checkbox"
                   checked={isPublicDevice}
                   onChange={(e) => setIsPublicDevice(e.target.checked)}
                 />
-                <span className="shared-device__box"></span>
-                <span className="shared-device__text flex items-center gap-1.5">
-                  <Lock className="w-3.5 h-3.5" />
+                <span className={styles.glCheckboxBox}>
+                  <svg
+                    className={styles.glCheckboxCheck}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={3}
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </span>
+                <span className={styles.glCheckboxLabel}>
+                  <Lock size={13} className={styles.lockIcon} />
                   Public/Shared Device
                 </span>
               </label>
-              <p className="text-[10px] text-zinc-500 mt-1.5 ml-[26px]">
-                Auto-expires after 15 min & tab close
-              </p>
+              <p className={styles.deviceHint}>Auto-expires after 15 min &amp; tab close</p>
             </div>
-            
-            <button className="submit-btn" type="submit" disabled={isLoading}>
-              {isLoading ? 'Signing in...' : 'Sign In'}
+
+            <button className={styles.flipCardBtn} type="submit" disabled={isLoading}>
+              {isLoading ? 'Signing in…' : "Let's go!"}
             </button>
           </form>
         </div>
       </div>
-    </StyledWrapper>
+
+      {/* ── Bottom-right profile FAB → opens developer profile card ── */}
+      <ProfileButton />
+    </div>
   );
 }
-
-const StyledWrapper = styled.div`
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--background);
-  padding: 1rem;
-
-  .card {
-    background-color: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 32px 28px;
-    width: 340px;
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.2);
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-  }
-
-  .title {
-    font-size: 28px;
-    font-weight: 800;
-    color: var(--foreground);
-    text-align: center;
-    letter-spacing: -0.5px;
-  }
-
-  .form {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .input-field {
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 8px;
-    border: 2px solid var(--border);
-    background-color: var(--background);
-    color: var(--foreground);
-    font-size: 14px;
-    outline: none;
-    transition: all 0.2s ease;
-  }
-
-  .input-field:focus {
-    border-color: #73C0FC;
-    box-shadow: 0 0 0 3px rgba(115, 192, 252, 0.2);
-  }
-
-  .input-field::placeholder {
-    color: var(--muted-foreground);
-  }
-
-  .shared-device {
-    margin-top: 4px;
-    margin-bottom: 8px;
-  }
-
-  .shared-device__label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-  }
-
-  .shared-device__checkbox {
-    display: none;
-  }
-
-  .shared-device__box {
-    width: 16px;
-    height: 16px;
-    border: 2px solid var(--border);
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-  }
-
-  .shared-device__checkbox:checked + .shared-device__box {
-    background-color: #73C0FC;
-    border-color: #73C0FC;
-  }
-
-  .shared-device__checkbox:checked + .shared-device__box::after {
-    content: '';
-    width: 4px;
-    height: 8px;
-    border: solid white;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
-    margin-bottom: 2px;
-  }
-
-  .shared-device__text {
-    font-size: 13px;
-    color: var(--foreground);
-    font-weight: 500;
-  }
-
-  .submit-btn {
-    background-color: var(--foreground);
-    color: var(--background);
-    border: none;
-    border-radius: 8px;
-    padding: 12px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-top: 8px;
-  }
-
-  .submit-btn:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    opacity: 0.9;
-  }
-
-  .submit-btn:active:not(:disabled) {
-    transform: translateY(1px);
-  }
-
-  .submit-btn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-  }
-`;

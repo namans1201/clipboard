@@ -55,7 +55,7 @@ Running 4 tests using 2 workers
 
 ### File Structure
 ```
-clipboard_easy/
+clipclap/
 ├── .env.local           # Your Supabase credentials (existing)
 ├── .env.test            # Test user credentials (CREATE THIS)
 └── .env.test.example    # Template (already exists)

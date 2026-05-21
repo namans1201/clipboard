@@ -5,27 +5,41 @@ import { BlurOverlay } from '@/components/blur-overlay';
 import { Toaster } from '@/components/ui/sonner';
 import { useAutoLock } from '@/hooks/use-auto-lock';
 import { useSessionHeartbeat } from '@/hooks/use-session-heartbeat';
+import { TopRightControls } from '@/components/top-right-controls';
+import { CompactProvider } from '@/contexts/compact-context';
+import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Client-side inactivity lock (5 minutes of no mouse/keyboard activity)
   useAutoLock(5);
-  // Client-side heartbeat that validates the server-stamped 15-minute
-  // absolute expiry for public-device sessions every 60 seconds.
   useSessionHeartbeat();
 
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const gradientStyle = mounted ? {
+    backgroundImage: resolvedTheme === 'dark'
+      ? 'linear-gradient(60deg, #29323c 0%, #485563 100%)'
+      : 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+  } : {};
+
   return (
-    <BlurOverlay>
-      <div className="flex h-screen overflow-hidden">
-        <Sidebar />
-        <main className="flex-1 overflow-auto w-full">
-          {children}
-        </main>
-      </div>
-      <Toaster position="bottom-right" />
-    </BlurOverlay>
+    <CompactProvider>
+      <BlurOverlay>
+        <div className="flex h-screen overflow-hidden">
+          <Sidebar />
+            <main className="flex-1 overflow-auto w-full" style={gradientStyle}>
+            {children}
+          </main>
+        </div>
+        <TopRightControls />
+        <Toaster position="bottom-right" />
+      </BlurOverlay>
+    </CompactProvider>
   );
 }

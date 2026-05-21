@@ -1,0 +1,199 @@
+/*
+  All units are `em` so setting font-size on .wrapper scales the whole toggle.
+  At font-size: 7px → 16em × 7em = 112px × 49px
+*/
+
+/* ─────────────────────────────────────────────
+   Keyframes
+───────────────────────────────────────────── */
+
+@keyframes knobSquish {
+  0%   { transform: scaleX(1)    scaleY(1); }
+  18%  { transform: scaleX(1.3)  scaleY(0.76); }
+  48%  { transform: scaleX(0.87) scaleY(1.13); }
+  74%  { transform: scaleX(1.05) scaleY(0.97); }
+  100% { transform: scaleX(1)    scaleY(1); }
+}
+
+/* ─────────────────────────────────────────────
+   Outer wrapper
+───────────────────────────────────────────── */
+.wrapper {
+  font-size: 7px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* ─────────────────────────────────────────────
+   Pill track
+───────────────────────────────────────────── */
+.toggleSwitch {
+  position: relative;
+  width: 16em;
+  height: 7em;
+  border-radius: 3.5em;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-image: url('/toggle/moon.jpg');
+
+  box-shadow:
+    inset 0 0 7em 7em rgba(0,0,0,0.3),
+    inset 0 0.8em 0.4em rgba(0,0,0,0.3),
+    inset 0 3em 1em rgba(0,0,0,0.25),
+    0 -0.25em 0.25em rgba(0,0,0,0.2),
+    0 0.25em 0.25em rgba(255,255,255,0.08);
+
+  transition: box-shadow 600ms ease;
+}
+
+/* Sun image crossfades in via ::before — no hard image swap */
+.toggleSwitch::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: url('/toggle/sun.png');
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 700ms ease-in-out;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.lightMode .toggleSwitch::before { opacity: 1; }
+
+.lightMode .toggleSwitch {
+  box-shadow:
+    inset 0 0 7em 7em rgba(0,0,0,0.1),
+    inset 0 0.8em 0.4em rgba(0,0,0,0.2),
+    inset 0 3em 1em rgba(0,0,0,0.1),
+    0 -0.25em 0.25em rgba(0,0,0,0.15),
+    0 0.25em 0.25em rgba(255,255,255,0.4);
+}
+
+/* ─────────────────────────────────────────────
+   Noise overlay
+───────────────────────────────────────────── */
+.bgNoise {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image: url('data:image/svg+xml,<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="5" numOctaves="2" stitchTiles="stitch"/></filter><rect width="100%25" height="100%25" filter="url(%23n)" opacity="0.25"/></svg>');
+  opacity: 0.4;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* ─────────────────────────────────────────────
+   Knob track — GPU-composited slide via translateX
+   (translateX never touches layout, always 60 fps)
+───────────────────────────────────────────── */
+.toggleKnobTrack {
+  position: absolute;
+  top: 1.1em;
+  left: 0.8em;               /* fixed left anchor */
+  width: 4.5em;
+  height: 4.5em;
+  z-index: 4;
+
+  /* dark (default): slide to the right */
+  transform: translateX(9.9em);
+
+  /* spring with slight overshoot */
+  transition: transform 520ms cubic-bezier(0.34, 1.46, 0.64, 1);
+  will-change: transform;
+}
+
+.lightMode .toggleKnobTrack {
+  transform: translateX(0);  /* light: sit at the left */
+}
+
+/* ─────────────────────────────────────────────
+   Knob glow shadow (inside track so it moves free)
+───────────────────────────────────────────── */
+.toggleKnobShadow {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────
+   Knob face (pure visual — no translation here)
+───────────────────────────────────────────── */
+.toggleKnob {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition:
+    background-color 450ms ease,
+    box-shadow       450ms ease;
+
+  background-color: #2b3445;
+  box-shadow:
+    inset 0 0.25em 0.25em rgba(255,255,255,0.08),
+    inset 0 -0.25em 0.25em rgba(0,0,0,0.2),
+    0 0.6em 0.4em rgba(0,0,0,0.5),
+    0 1.25em 1em rgba(0,0,0,0.5);
+}
+
+.toggleKnob:hover {
+  box-shadow:
+    inset 0 0.25em 0.25em rgba(255,255,255,0.12),
+    inset 0 -0.25em 0.25em rgba(0,0,0,0.2),
+    0 0.6em 0.4em rgba(0,0,0,0.5),
+    0 1.25em 1em rgba(0,0,0,0.5),
+    0 0 1.2em 0.6em rgba(120,160,255,0.2);
+}
+
+.lightMode .toggleKnob {
+  background-color: #d0cbc3;
+  box-shadow:
+    inset 0 0.25em 0.25em rgba(255,255,255,0.4),
+    inset 0 -0.25em 0.25em rgba(0,0,0,0.15),
+    0 0.6em 0.4em rgba(0,0,0,0.25),
+    0 1.25em 1em rgba(0,0,0,0.25);
+}
+
+.lightMode .toggleKnob:hover {
+  box-shadow:
+    inset 0 0.25em 0.25em rgba(255,255,255,0.5),
+    inset 0 -0.25em 0.25em rgba(0,0,0,0.12),
+    0 0.6em 0.4em rgba(0,0,0,0.25),
+    0 1.25em 1em rgba(0,0,0,0.25),
+    0 0 1.2em 0.6em rgba(255,200,80,0.25);
+}
+
+/* Rubber squish on click (no translateX here — track handles position) */
+.toggleKnob.squishing {
+  animation: knobSquish 520ms cubic-bezier(0.34, 1.46, 0.64, 1) forwards;
+}
+
+/* ─────────────────────────────────────────────
+   Icons
+───────────────────────────────────────────── */
+.sunIcon,
+.moonIcon {
+  position: absolute;
+  width: 2em;
+  height: 2em;
+  transition:
+    opacity   360ms ease,
+    transform 360ms cubic-bezier(0.34, 1.46, 0.64, 1);
+}
+
+.wrapper .sunIcon  { opacity: 1; transform: rotate(0deg)    scale(1); }
+.wrapper .moonIcon { opacity: 0; transform: rotate(200deg)  scale(0.3); }
+
+.lightMode .sunIcon  { opacity: 0; transform: rotate(-200deg) scale(0.3); }
+.lightMode .moonIcon { opacity: 1; transform: rotate(0deg)    scale(1); }

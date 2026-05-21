@@ -1,0 +1,175 @@
+/* src/style.scss */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: sans-serif;
+}
+
+.toggle-root {
+  width: 100vw;
+  height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  position: relative;
+  overflow: hidden;
+
+  transition: background-color 300ms ease-out;
+}
+
+.dark-mode {
+  background-color: #1d2532;
+}
+
+.light-mode {
+  background-color: #dedad3;
+}
+
+.bg-noise {
+  position: absolute;
+  inset: 0;
+
+  background-image: url('data:image/svg+xml,<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="5" numOctaves="2" stitchTiles="stitch"/></filter><rect width="100%25" height="100%25" filter="url(%23n)" opacity="0.25"/></svg>');
+
+  opacity: 0.4;
+}
+
+.toggle-switch {
+  position: relative;
+
+  width: 16rem;
+  height: 7rem;
+
+  border-radius: 3.5rem;
+
+  overflow: hidden;
+
+  cursor: pointer;
+
+  background-image: url("./assets/moon.jpg");  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  transition:
+    background-image 400ms ease,
+    box-shadow 300ms ease;
+
+  box-shadow:
+    inset 0 0 7rem 7rem rgba(0,0,0,0.3),
+    inset 0 0.8rem 0.4rem rgba(0,0,0,0.3),
+    inset 0 3rem 1rem rgba(0,0,0,0.25),
+    0 -0.25em 0.25em rgba(0,0,0,0.2),
+    0 0.25em 0.25em rgba(255,255,255,0.08);
+}
+
+.light-mode .toggle-switch {
+  background-image: url("./assets/sun.png");
+
+  box-shadow:
+    inset 0 0 7rem 7rem rgba(0,0,0,0.1),
+    inset 0 0.8rem 0.4rem rgba(0,0,0,0.2),
+    inset 0 3rem 1rem rgba(0,0,0,0.1),
+    0 -0.25em 0.25em rgba(0,0,0,0.15),
+    0 0.25em 0.25em rgba(255,255,255,0.4);
+}
+
+.toggle-knob-shadow {
+  position: absolute;
+
+  top: 1.1rem;
+  left: 10.7rem;
+
+  width: 4.5rem;
+  height: 4.5rem;
+
+  border-radius: 50%;
+
+  background: rgba(255,255,255,0.1);
+
+  transition: left 300ms ease;
+}
+
+.light-mode .toggle-knob-shadow {
+  left: 0.8rem;
+}
+
+.toggle-knob {
+  position: absolute;
+  z-index: 5;
+
+  top: 1.1rem;
+  left: 10.7rem;
+
+  width: 4.5rem;
+  height: 4.5rem;
+
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition:
+    left 300ms ease,
+    background-color 300ms ease,
+    box-shadow 300ms ease;
+
+  background-color: #2b3445;
+
+  box-shadow:
+    inset 0 0.25rem 0.25rem rgba(255,255,255,0.08),
+    inset 0 -0.25rem 0.25rem rgba(0,0,0,0.2),
+    0 0.6rem 0.4rem rgba(0,0,0,0.5),
+    0 1.25rem 1rem rgba(0,0,0,0.5);
+}
+
+.light-mode .toggle-knob {
+  left: 0.8rem;
+
+  background-color: #d0cbc3;
+
+  box-shadow:
+    inset 0 0.25rem 0.25rem rgba(255,255,255,0.4),
+    inset 0 -0.25rem 0.25rem rgba(0,0,0,0.15),
+    0 0.6rem 0.4rem rgba(0,0,0,0.25),
+    0 1.25rem 1rem rgba(0,0,0,0.25);
+}
+
+.sun-icon,
+.moon-icon {
+  position: absolute;
+
+  width: 2rem;
+  height: 2rem;
+
+  transition:
+    opacity 300ms ease,
+    transform 300ms ease;
+}
+
+.dark-mode .sun-icon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+.dark-mode .moon-icon {
+  opacity: 0;
+  transform: rotate(180deg) scale(0.5);
+}
+
+.light-mode .sun-icon {
+  opacity: 0;
+  transform: rotate(-180deg) scale(0.5);
+}
+
+.light-mode .moon-icon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}

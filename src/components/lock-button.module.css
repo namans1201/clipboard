@@ -1,0 +1,70 @@
+/* ── light mode tokens ── */
+.wrap {
+  --bg:           #eef1f6;
+  --shadow-dark:  rgba(55, 84, 170, 0.15);
+  --shadow-light: rgba(255, 255, 255, 0.95);
+  --inset-dark:   rgba(55, 84, 170, 0.15);
+  --inset-light:  rgba(255, 255, 255, 0.9);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:global(.dark) .wrap {
+  --bg:           #131c2c;
+  --shadow-dark:  rgba(0, 0, 0, 0.5);
+  --shadow-light: rgba(35, 55, 90, 0.4);
+  --inset-dark:   rgba(0, 0, 0, 0.45);
+  --inset-light:  rgba(35, 55, 90, 0.35);
+}
+
+/* ── circle button — sized to match the 49px-tall theme toggle ── */
+.button {
+  position: relative;
+  width: 49px;
+  height: 49px;
+  background: var(--bg);
+  border-radius: 50%;
+  box-shadow:
+    6px 6px 10px var(--shadow-dark),
+    -6px -6px 14px var(--shadow-light),
+    inset 0 0 2px rgba(255, 255, 255, 0.12);
+  transition: box-shadow 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  border: none;
+  font-size: 0;
+  cursor: pointer;
+  overflow: visible;
+}
+
+.button:hover,
+.button:focus-visible {
+  box-shadow:
+    inset 4px 4px 9px var(--inset-dark),
+    inset -4px -4px 12px var(--inset-light),
+    0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+/* ── SVG ── */
+.button svg {
+  width: 58%;
+  height: 58%;
+  display: block;
+  filter: drop-shadow(-1px -1px 1px rgba(55, 84, 170, 0.2));
+  overflow: hidden;
+}
+
+.prints { /* paths styled by JS */ }
+
+.draw {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.button:hover .draw {
+  opacity: 0.5;
+}

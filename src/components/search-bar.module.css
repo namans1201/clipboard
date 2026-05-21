@@ -1,0 +1,136 @@
+/* ── light theme tokens ── */
+.container {
+  --surface:      #eaeef4;
+  --border-col:   rgba(255,255,255,0.8);
+  --shadow-out-a: rgba(168,180,200,0.65);
+  --shadow-out-b: rgba(255,255,255,0.75);
+  --inset-a:      rgba(160,175,198,0.55);
+  --inset-b:      rgba(255,255,255,0.9);
+  --icon-fill:    #1a2233;
+  --icon-surface: #eaeef4;
+  --text-color:   #1a2233;
+  --placeholder:  #7a96b8;
+  width: 100%;
+}
+
+/* ── dark theme overrides ── */
+:global(.dark) .container {
+  --surface:      #232e40;
+  --border-col:   rgba(60,160,230,0.18);
+  --shadow-out-a: rgba(10,14,22,0.75);
+  --shadow-out-b: rgba(40,62,95,0.4);
+  --inset-a:      rgba(8,12,20,0.65);
+  --inset-b:      rgba(38,58,88,0.35);
+  --icon-fill:    #c8d8ec;
+  --icon-surface: #232e40;
+  --text-color:   #e2eaf3;
+  --placeholder:  #5a7898;
+}
+
+/* ── outer pill ── */
+.finder {
+  border: 1px solid var(--border-col);
+  background-color: var(--surface);
+  border-radius: 14px;
+  padding: 6px;
+  box-shadow:
+    8px 8px 14px var(--shadow-out-a),
+    -8px -8px 14px var(--shadow-out-b);
+  transition: box-shadow 0.3s ease;
+}
+
+/* ── inner inset trough ── */
+.finderOuter {
+  display: flex;
+  width: 100%;
+  padding: 0.6rem 1.1rem;
+  border-radius: 9px;
+  box-shadow:
+    inset 8px 8px 12px -8px var(--inset-a),
+    inset -8px -8px 12px -8px var(--inset-b);
+  box-sizing: border-box;
+}
+
+.finderInner {
+  display: flex;
+  align-items: center;
+  position: relative;
+  flex: 1;
+  gap: 0.75rem;
+}
+
+/* ── animated search icon ── */
+.finderIcon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 14px var(--icon-fill);
+  border-radius: 50%;
+  position: relative;
+  transition: all 0.25s ease, transform 0.4s cubic-bezier(0.68,-0.55,0.265,1.55);
+}
+
+.finderIcon::after {
+  display: block;
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: var(--icon-fill);
+  border: 2.5px solid var(--icon-surface);
+  top: 50%;
+  left: 0;
+  right: 0;
+  margin: auto;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  transition: all 0.4s cubic-bezier(0.68,-0.55,0.265,1.55);
+}
+
+.finderIcon::before {
+  display: block;
+  content: '';
+  position: absolute;
+  width: 3px;
+  height: 10px;
+  background-color: var(--icon-surface);
+  top: 50%;
+  left: 14px;
+  transform: rotateZ(45deg) translate(-50%, 0);
+  transform-origin: 0 0;
+  border-radius: 3px;
+  transition: all 0.45s cubic-bezier(0.68,-0.55,0.265,1.55);
+}
+
+/* ── active state (focused or has value) ── */
+.active .finderIcon {
+  transform: translateY(-4px);
+}
+
+.active .finderIcon::after {
+  border-width: 8px;
+  background-color: var(--icon-surface);
+}
+
+.active .finderIcon::before {
+  background-color: var(--icon-fill);
+  width: 4px;
+  transform: rotateZ(45deg) translate(-50%, 18px);
+}
+
+/* ── text input ── */
+.finderInput {
+  border: none;
+  background-color: transparent;
+  outline: none;
+  font-size: 0.95rem;
+  letter-spacing: 0.4px;
+  color: var(--text-color);
+  width: 100%;
+  height: 28px;
+  caret-color: var(--icon-fill);
+}
+
+.finderInput::placeholder {
+  color: var(--placeholder);
+}

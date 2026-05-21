@@ -65,13 +65,13 @@ export function Sidebar() {
         <Link href="/" className="flex items-center gap-3 transition-transform hover:scale-105">
           <Image 
             src="/logo.svg" 
-            alt="Clipboard Easy Logo" 
+            alt="ClipClap Logo"
             width={32} 
             height={32}
             className="rounded"
             priority
           />
-          <span className="font-semibold text-lg">Clipboard Easy</span>
+          <span className="font-semibold text-lg">ClipClap</span>
         </Link>
       </div>
 

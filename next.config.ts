@@ -8,8 +8,9 @@ const nextConfig: NextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
 
-  // Optimize production builds
+  // Optimize production builds + styled-components SSR (deterministic class names)
   compiler: {
+    styledComponents: true,
     removeConsole: process.env.NODE_ENV === 'production' ? {
       exclude: ['error', 'warn'],
     } : false,

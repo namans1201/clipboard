@@ -1,4 +1,4 @@
--- Clipboard Easy Database Setup
+-- ClipClap Database Setup
 -- Run this in your Supabase SQL Editor
 
 -- Create groups table

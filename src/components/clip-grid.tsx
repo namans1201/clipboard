@@ -15,6 +15,7 @@ interface ClipGridProps {
   isTrashView?: boolean;
   emptyMessage?: string;
   searchQuery?: string;
+  compact?: boolean;
 }
 
 function ClipGridComponent({
@@ -28,6 +29,7 @@ function ClipGridComponent({
   isTrashView = false,
   emptyMessage = 'No clips yet',
   searchQuery = '',
+  compact = false,
 }: ClipGridProps) {
   if (clips.length === 0) {
     return (
@@ -39,7 +41,10 @@ function ClipGridComponent({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+    <div className={compact
+      ? 'flex flex-col gap-3'
+      : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start'
+    }>
       {clips.map((clip) => (
         <ClipCard
           key={clip.id}
@@ -52,6 +57,7 @@ function ClipGridComponent({
           onClick={onClipClick}
           isTrashView={isTrashView}
           searchQuery={searchQuery}
+          compact={compact}
         />
       ))}
     </div>
