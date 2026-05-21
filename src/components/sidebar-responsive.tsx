@@ -189,19 +189,26 @@ export function Sidebar() {
           <Menu className="h-5 w-5" />
         </SheetTrigger>
         <SheetContent side="left" className="p-0 w-64">
-          <aside className="flex flex-col h-full bg-sidebar">
+          {/* Paint with --surface-gradient (the swapped main-area gradient).
+              Inline style overrides the default sidebar bg. */}
+          <aside
+            className="flex flex-col h-full"
+            style={{ background: 'var(--surface-gradient)' }}
+          >
             <SidebarContent onNavigate={() => setMobileOpen(false)} />
           </aside>
         </SheetContent>
       </Sheet>
 
-      {/* Desktop sidebar — width animates between 16rem (open) and 0 (collapsed) */}
+      {/* Desktop sidebar — width animates between 16rem (open) and 0 (collapsed).
+          Background swapped: now uses --surface-gradient (was on <main>). */}
       <aside
         className={cn(
-          'hidden md:flex border-r bg-sidebar flex-col h-screen gpu-accelerated overflow-hidden',
+          'hidden md:flex border-r flex-col h-screen gpu-accelerated overflow-hidden',
           'transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]',
           collapsed ? 'w-0 border-r-0' : 'w-64',
         )}
+        style={{ background: 'var(--surface-gradient)' }}
         aria-hidden={collapsed}
       >
         <SidebarContent />

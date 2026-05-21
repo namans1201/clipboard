@@ -14,7 +14,7 @@ import { DashboardLoader } from '@/components/dashboard-loader';
 import { Clip } from '@/types/database';
 
 export default function HomePage() {
-  const { clips, loading, error: clipsError, refetch: refetchClips, createClip, updateClip, togglePin, softDelete } = useClips();
+  const { clips, loading, error: clipsError, refetch: refetchClips, createClip, updateClip, togglePin, toggleLock, resizeClip, softDelete } = useClips();
   const { groups, error: groupsError } = useGroups();
   const { compact } = useCompact();
   const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
@@ -64,6 +64,8 @@ export default function HomePage() {
         clips={filteredClips}
         groups={groups}
         onTogglePin={togglePin}
+        onToggleLock={toggleLock}
+        onResize={resizeClip}
         onDelete={softDelete}
         onClipClick={handleClipClick}
         emptyMessage={debouncedQuery ? 'No clips match your search' : 'No clips yet. Create your first clip!'}

@@ -2,12 +2,12 @@
 
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
+import { switchTheme } from '@/lib/theme-switch';
 import styles from './theme-toggle-dashboard.module.css';
 
 export function DashboardThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const [squishing, setSquishing] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
@@ -15,9 +15,13 @@ export function DashboardThemeToggle() {
 
   const isDark = resolvedTheme === 'dark';
 
+  // switchTheme momentarily disables all CSS transitions (see globals.css
+  // → `.theme-switching`) so the colour change repaints in a single frame
+  // instead of animating box-shadow / background-color / border-color on
+  // every element in the tree. The toggle knob's own translateX slide
+  // (theme-toggle-dashboard.module.css) still runs and carries the motion.
   const handleClick = () => {
-    setSquishing(true);
-    setTheme(isDark ? 'light' : 'dark');
+    switchTheme(setTheme, isDark ? 'light' : 'dark');
   };
 
   return (
@@ -35,10 +39,7 @@ export function DashboardThemeToggle() {
         <div className={styles.toggleKnobTrack}>
           <div className={styles.toggleKnobShadow} />
 
-          <div
-            className={`${styles.toggleKnob}${squishing ? ` ${styles.squishing}` : ''}`}
-            onAnimationEnd={() => setSquishing(false)}
-          >
+          <div className={styles.toggleKnob}>
             {/* Sun — shown in dark mode */}
             <svg
               className={styles.sunIcon}

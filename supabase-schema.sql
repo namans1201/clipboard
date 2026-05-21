@@ -18,7 +18,15 @@ CREATE TABLE IF NOT EXISTS public.clips (
     title TEXT,
     is_pinned BOOLEAN DEFAULT FALSE,
     is_deleted BOOLEAN DEFAULT FALSE,
+    -- When TRUE, the dashboard hides this clip's content behind a "locked"
+    -- cover. UI affordance only — RLS still restricts access by user.
+    is_locked BOOLEAN NOT NULL DEFAULT FALSE,
     group_id UUID REFERENCES public.groups(id) ON DELETE SET NULL,
+    -- Per-clip layout spans for drag-to-resize. Defaults to 1x1 (current
+    -- visual default). Clamped to 1..3 by CHECK constraints; the UI
+    -- additionally caps width_span by the current responsive breakpoint.
+    width_span  INT NOT NULL DEFAULT 1 CHECK (width_span  BETWEEN 1 AND 3),
+    height_span INT NOT NULL DEFAULT 1 CHECK (height_span BETWEEN 1 AND 3),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
