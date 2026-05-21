@@ -27,7 +27,9 @@ export default function TrashPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [confirmDeleteGroupId, setConfirmDeleteGroupId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  // Transition is used only for the search-filter state update — visible
+  // pending-bar removed to keep the layout stable on every interaction.
+  const [, startTransition] = useTransition();
 
   const filteredClips = useMemo(() => {
     if (!searchQuery.trim()) return clips;
@@ -131,7 +133,6 @@ export default function TrashPage() {
         </div>
       </div>
 
-      {isPending && <div className="h-1 bg-primary/20 animate-pulse rounded" />}
 
       {!hasAnyDeleted ? (
         <div className="flex items-center justify-center h-64 text-muted-foreground">

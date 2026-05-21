@@ -20,7 +20,13 @@ export default function HomePage() {
   const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedQuery = useDebounce(searchQuery, 200);
-  const [isPending, startTransition] = useTransition();
+  // Transition is used only for the search-filter state update (which can
+  // be heavier when there are many clips). Opening a clip is an instant
+  // dialog open, not a transition, so we drop it on click. The previous
+  // implementation also rendered a visible pending pulse-bar above the
+  // grid, which caused a layout shift + visible line every time the user
+  // clicked a clip — removed.
+  const [, startTransition] = useTransition();
 
   const filteredClips = useMemo(() => {
     if (!debouncedQuery.trim()) return clips;
@@ -33,7 +39,7 @@ export default function HomePage() {
   }, [clips, debouncedQuery]);
 
   const handleClipClick = (clip: Clip) => {
-    startTransition(() => setSelectedClip(clip));
+    setSelectedClip(clip);
   };
 
   const handleSearchChange = (value: string) => {
@@ -57,8 +63,6 @@ export default function HomePage() {
         {/* + button immediately after the bar */}
         <NewClipDialog groups={groups} onCreateClip={createClip} />
       </div>
-
-      {isPending && <div className="h-1 bg-primary/20 animate-pulse rounded" />}
 
       <ClipGrid
         clips={filteredClips}

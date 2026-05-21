@@ -34,7 +34,10 @@ export default function GroupPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  // Transition used only for the search-filter; opening a clip is an
+  // instant dialog open. Visible pending-bar removed to stop the layout
+  // shift on clip click.
+  const [, startTransition] = useTransition();
 
   const group = groups.find((g) => g.id === groupId);
   const isLoading = clipsLoading || groupsLoading;
@@ -56,9 +59,7 @@ export default function GroupPage() {
   };
 
   const handleClipClick = (clip: Clip) => {
-    startTransition(() => {
-      setSelectedClip(clip);
-    });
+    setSelectedClip(clip);
   };
 
   const handleStartEdit = () => {
@@ -167,8 +168,6 @@ export default function GroupPage() {
           <NewClipDialog groups={groups} onCreateClip={(content, title) => createClip(content, title, groupId)} />
         </div>
       </div>
-
-      {isPending && <div className="h-1 bg-primary/20 animate-pulse rounded" />}
 
       <ClipGrid
         clips={filteredClips}

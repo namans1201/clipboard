@@ -15,7 +15,10 @@ export default function PinnedPage() {
   const { groups } = useGroups();
   const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isPending, startTransition] = useTransition();
+  // Transition used only for the search-filter; opening a clip is an
+  // instant dialog open and doesn't need to defer. Visible pending-bar
+  // removed to stop the layout shift on clip click.
+  const [, startTransition] = useTransition();
 
   const filteredClips = useMemo(() => {
     if (!searchQuery.trim()) return clips;
@@ -34,9 +37,7 @@ export default function PinnedPage() {
   };
 
   const handleClipClick = (clip: Clip) => {
-    startTransition(() => {
-      setSelectedClip(clip);
-    });
+    setSelectedClip(clip);
   };
 
   if (loading) {
@@ -68,8 +69,6 @@ export default function PinnedPage() {
         <div className="flex items-center gap-2">
         </div>
       </div>
-
-      {isPending && <div className="h-1 bg-primary/20 animate-pulse rounded" />}
 
       <ClipGrid
         clips={filteredClips}
