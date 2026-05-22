@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import {
   Pin,
   Copy,
-  Trash2,
   RotateCcw,
   X,
   Eye,
@@ -388,12 +387,49 @@ function ClipCardComponent({
         role={onClick ? 'button' : undefined}
         aria-label={cardLabel}
       >
-        {/* Header — traffic-light dots + filename + top-right meta */}
+        {/* Header — traffic-light dots (now interactive: red=delete,
+            yellow=pin, green=download) + filename + top-right pin meta.
+            Icons live inside each dot and only fade in on card hover,
+            so at rest the header looks identical to a static
+            code-editor window. */}
         <div className={styles.header}>
-          <div className={styles.dots} aria-hidden>
-            <span className={cn(styles.dot, styles.dotRed)} />
-            <span className={cn(styles.dot, styles.dotYellow)} />
-            <span className={cn(styles.dot, styles.dotGreen)} />
+          <div className={styles.dots}>
+            <button
+              type="button"
+              className={cn(styles.dot, styles.dotRed)}
+              onClick={handleDelete}
+              disabled={isWorking}
+              aria-label="Delete clip"
+              title="Delete"
+              data-testid="clip-dot-delete"
+            >
+              <X className={styles.dotIcon} />
+            </button>
+            <button
+              type="button"
+              className={cn(styles.dot, styles.dotYellow)}
+              onClick={handleTogglePin}
+              disabled={isWorking}
+              aria-label={clip.is_pinned ? 'Unpin clip' : 'Pin clip'}
+              title={clip.is_pinned ? 'Unpin' : 'Pin'}
+              data-testid="clip-dot-pin"
+            >
+              <Pin
+                className={styles.dotIcon}
+                fill={clip.is_pinned ? 'currentColor' : 'none'}
+              />
+            </button>
+            <button
+              type="button"
+              className={cn(styles.dot, styles.dotGreen)}
+              onClick={handleDownload}
+              disabled={isWorking}
+              aria-label="Download clip as file"
+              title="Download"
+              data-testid="clip-dot-download"
+            >
+              <Download className={styles.dotIcon} />
+            </button>
           </div>
           <div className={styles.title}>
             {searchQuery && clip.title
@@ -466,6 +502,9 @@ function ClipCardComponent({
                 </Button>
               </>
             ) : (
+              // Delete / Pin / Download moved to the red/yellow/green
+              // traffic-light dots in the header. Bottom row keeps the
+              // remaining secondary actions (view, lock, copy).
               <>
                 <Button
                   variant="ghost"
@@ -497,41 +536,6 @@ function ClipCardComponent({
                   disabled={isWorking}
                 >
                   <Copy className="h-3.5 w-3.5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 rounded-full"
-                  onClick={handleDownload}
-                  title="Download as file"
-                  disabled={isWorking}
-                >
-                  <Download className="h-3.5 w-3.5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 rounded-full"
-                  onClick={handleTogglePin}
-                  title={clip.is_pinned ? 'Unpin' : 'Pin'}
-                  disabled={isWorking}
-                >
-                  <Pin
-                    className={cn(
-                      'h-3.5 w-3.5',
-                      clip.is_pinned && 'fill-current',
-                    )}
-                  />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 rounded-full text-destructive"
-                  onClick={handleDelete}
-                  title="Delete"
-                  disabled={isWorking}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </>
             )}

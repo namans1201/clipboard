@@ -68,17 +68,71 @@
   align-items: center;
 }
 
+/* Traffic-light dots are clickable buttons now (close/min/max → delete/pin/
+   download). At rest they look identical to the previous decorative dots —
+   same diameter, same colours, same inset hairline. On card hover they
+   nudge wider to make room for a tiny icon (mirroring the macOS pattern). */
 .dot {
   width: 11px;
   height: 11px;
   border-radius: 50%;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   box-shadow: inset 0 0 0 1px var(--dot-shadow);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  outline: none;
+  transition: width 0.18s ease, height 0.18s ease,
+              box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.card:hover .dot,
+.card:focus-within .dot {
+  width: 15px;
+  height: 15px;
+}
+
+.dot:hover {
+  transform: scale(1.08);
+  box-shadow:
+    inset 0 0 0 1px var(--dot-shadow),
+    0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.dot:focus-visible {
+  box-shadow:
+    inset 0 0 0 1px var(--dot-shadow),
+    0 0 0 2px rgba(40, 110, 220, 0.45);
 }
 
 .dotRed    { background-color: #ff605c; }
 .dotYellow { background-color: #ffbd44; }
 .dotGreen  { background-color: #00ca4e; }
+
+.dotRed:hover    { background-color: #ff766f; }
+.dotYellow:hover { background-color: #ffc960; }
+.dotGreen:hover  { background-color: #1ad968; }
+
+/* Icon inside each dot — invisible at rest, fades in once the card is
+   under the mouse. Dark-on-bright works for all three traffic-light
+   colours and matches the macOS look. */
+.dotIcon {
+  width: 9px;
+  height: 9px;
+  opacity: 0;
+  color: rgba(0, 0, 0, 0.6);
+  transition: opacity 0.15s ease;
+  stroke-width: 2.5;
+  pointer-events: none;
+}
+
+.card:hover .dotIcon,
+.card:focus-within .dotIcon {
+  opacity: 1;
+}
 
 .title {
   flex: 1 1 auto;
