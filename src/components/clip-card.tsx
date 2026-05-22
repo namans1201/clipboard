@@ -483,7 +483,7 @@ function ClipCardComponent({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 rounded-full"
+                  className="h-9 w-9 sm:h-7 sm:w-7 rounded-full"
                   onClick={handleRestore}
                   title="Restore"
                   disabled={isWorking}
@@ -493,7 +493,7 @@ function ClipCardComponent({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 rounded-full text-destructive"
+                  className="h-9 w-9 sm:h-7 sm:w-7 rounded-full text-destructive"
                   onClick={handlePermanentDelete}
                   title="Delete permanently"
                   disabled={isWorking}
@@ -509,7 +509,7 @@ function ClipCardComponent({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 rounded-full"
+                  className="h-9 w-9 sm:h-7 sm:w-7 rounded-full"
                   onClick={handleQuickView}
                   title="Quick view"
                   data-testid="clip-eye"
@@ -519,7 +519,7 @@ function ClipCardComponent({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 rounded-full"
+                  className="h-9 w-9 sm:h-7 sm:w-7 rounded-full"
                   onClick={handleToggleLock}
                   title={clip.is_locked ? 'Unlock' : 'Lock'}
                   disabled={isWorking}
@@ -530,7 +530,7 @@ function ClipCardComponent({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 rounded-full"
+                  className="h-9 w-9 sm:h-7 sm:w-7 rounded-full"
                   onClick={handleCopy}
                   title="Copy"
                   disabled={isWorking}

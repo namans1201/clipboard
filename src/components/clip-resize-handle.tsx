@@ -138,12 +138,15 @@ export function ClipResizeHandle({
         // Bottom-right corner. Visible at low opacity always (so users
         // discover the affordance), full opacity on hover/focus-within.
         // Stop click bubbling so the grab doesn't trigger the card's
-        // onClick (open editor).
+        // onClick (open editor). Hidden on touch devices — drag-resize
+        // is impractical with a finger, and the handle's tiny target
+        // would just frustrate users (mistaps would open the editor).
         'absolute bottom-1 right-1 z-20',
         'h-[22px] w-[22px] cursor-nwse-resize',
         'opacity-50 group-hover:opacity-100 group-focus-within:opacity-100',
         'transition-opacity touch-none select-none',
         'flex items-end justify-end',
+        '[@media(hover:none)_and_(pointer:coarse)]:hidden',
         className,
       )}
       onPointerDown={handlePointerDown}

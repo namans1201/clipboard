@@ -15,15 +15,27 @@
    which is the scroll container. Children of a scrolling container scroll
    along with its content — so these controls start aligned with the
    search bar and slide up out of view as the user scrolls, exactly like
-   the search bar and add button. */
+   the search bar and add button.
+
+   Hidden on mobile (<640px): the wide 16em theme toggle + lock button
+   together eat ~80% of a 375px viewport, leaving no room for the search
+   bar. Mobile users get a compact icon theme toggle in the sidebar
+   header (see sidebar-responsive.tsx) and the lock action via the
+   hamburger Sheet menu. */
 .controls {
+  display: none;
   position: absolute;
   z-index: 10;
-  display: flex;
   align-items: center;
   gap: 0.75rem;
   top: 22px;
   right: 1.1rem;
+}
+
+@media (min-width: 640px) {
+  .controls {
+    display: flex;
+  }
 }
 
 @media (min-width: 640px) {

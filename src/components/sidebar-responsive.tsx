@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Files, Pin, Folder, Plus, Menu } from 'lucide-react';
+import { Files, Pin, Folder, Plus, Menu, Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { switchTheme } from '@/lib/theme-switch';
 import { TrashButton } from '@/components/trash-button';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -24,6 +26,38 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { SidebarToggle } from '@/components/sidebar-toggle';
+/**
+ * Compact icon-only theme toggle for the sidebar header. Exists alongside
+ * the wide TopRightControls cluster (which hides itself on mobile because
+ * it eats too much viewport). This way mobile users still have a theme
+ * toggle without the 16em wide control.
+ */
+function SidebarThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  // Canonical next-themes SSR hydration guard: render a neutral placeholder
+  // until we know which theme to show. The eslint rule complains because
+  // `setState` inside `useEffect` is usually a smell — here it's the
+  // documented way to avoid the server/client value mismatch from useTheme().
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return <div className="h-7 w-7" aria-hidden />;
+  const isDark = resolvedTheme === 'dark';
+  return (
+    <button
+      type="button"
+      onClick={() => switchTheme(setTheme, isDark ? 'light' : 'dark')}
+      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      title={isDark ? 'Light mode' : 'Dark mode'}
+      className="inline-flex h-7 w-7 items-center justify-center rounded-md text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+    >
+      {isDark
+        ? <Sun  className="h-4 w-4" />
+        : <Moon className="h-4 w-4" />}
+    </button>
+  );
+}
+
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { groups, createGroup } = useGroups();
@@ -74,8 +108,14 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           </span>
         </Link>
 
-        {/* grid / list view toggle */}
-        <CompactToggle checked={compact} onChange={setCompact} />
+        {/* Right side of header: theme toggle + grid/list compact toggle.
+            Theme toggle here covers mobile (the big TopRightControls
+            cluster is hidden below sm) without taking layout space at
+            wider breakpoints. */}
+        <div className="flex items-center gap-1">
+          <SidebarThemeToggle />
+          <CompactToggle checked={compact} onChange={setCompact} />
+        </div>
       </div>
 
       <ScrollArea className="flex-1 px-2.5 py-3 smooth-scroll">

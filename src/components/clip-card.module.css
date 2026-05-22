@@ -95,6 +95,30 @@
   height: 15px;
 }
 
+/* Touch devices have no hover. Two adjustments:
+     1. Expand the clickable area to ~44px (Apple HIG) without growing
+        the visible dot, via padding + box-sizing: content-box +
+        background-clip: content-box. The padding zone is transparent;
+        only the inner 11px shows the colour.
+     2. Reveal the icons permanently — the "fade in on hover" model
+        doesn't work without hover, and otherwise the dots are blank
+        and look decorative.
+   The decorative 1px inset shadow is dropped on touch since it would
+   render on the full 44px hit area, not the visible 11px dot. */
+@media (hover: none) and (pointer: coarse) {
+  .dot {
+    box-sizing: content-box;
+    width: 11px;
+    height: 11px;
+    padding: 16.5px;
+    background-clip: content-box;
+    box-shadow: none;
+  }
+  .dotIcon {
+    opacity: 1;
+  }
+}
+
 .dot:hover {
   transform: scale(1.08);
   box-shadow:

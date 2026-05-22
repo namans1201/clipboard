@@ -54,8 +54,12 @@ export default function HomePage() {
         <ErrorDisplay error={clipsError || groupsError} onRetry={refetchClips} />
       )}
 
-      {/* ── Top bar: Search + New Clip ── */}
-      <div className="flex items-center gap-2 pr-[200px]">
+      {/* ── Top bar: Search + New Clip.
+          The right-side reservation is for the absolute-positioned
+          TopRightControls cluster. That cluster is hidden below sm
+          (see top-right-controls.module.css), so we only reserve room
+          for it at sm+. */}
+      <div className="flex items-center gap-2 sm:pr-[200px]">
         {/* search bar — fills available space up to a max */}
         <div className="flex-1 min-w-0">
           <SearchBar value={searchQuery} onChange={handleSearchChange} />
