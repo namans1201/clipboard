@@ -26,7 +26,9 @@ export default function TrashPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [confirmDeleteGroupId, setConfirmDeleteGroupId] = useState<string | null>(null);
+  const [confirmEmpty, setConfirmEmpty] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isEmptying, setIsEmptying] = useState(false);
   // Transition is used only for the search-filter state update — visible
   // pending-bar removed to keep the layout stable on every interaction.
   const [, startTransition] = useTransition();
@@ -94,6 +96,45 @@ export default function TrashPage() {
     }
   };
 
+  /**
+   * Empty the entire trash — every trashed clip + every trashed group.
+   * Runs deletes in parallel (Promise.allSettled) so one failure doesn't
+   * abort the rest, and reports a summary in the toast. Disables itself
+   * while in flight to prevent double-clicks.
+   */
+  const handleEmptyTrash = async () => {
+    if (isEmptying) return;
+    setIsEmptying(true);
+
+    const clipResults = await Promise.allSettled(
+      clips.map((c) => permanentDelete(c.id)),
+    );
+    const groupResults = await Promise.allSettled(
+      deletedGroups.map((g) => permanentDeleteGroup(g.id)),
+    );
+
+    const failed =
+      clipResults.filter((r) => r.status === 'rejected').length +
+      groupResults.filter((r) => r.status === 'rejected').length;
+    const succeeded =
+      clipResults.length + groupResults.length - failed;
+
+    setConfirmEmpty(false);
+    setIsEmptying(false);
+
+    if (failed === 0) {
+      toast.success(
+        `Trash emptied — ${succeeded} item${succeeded === 1 ? '' : 's'} permanently deleted`,
+      );
+    } else if (succeeded === 0) {
+      toast.error(`Failed to empty trash (${failed} item${failed === 1 ? '' : 's'} could not be deleted)`);
+    } else {
+      toast.warning(
+        `Emptied ${succeeded} item${succeeded === 1 ? '' : 's'}; ${failed} could not be deleted`,
+      );
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-6">
@@ -130,6 +171,20 @@ export default function TrashPage() {
           <SearchBar value={searchQuery} onChange={handleSearchChange} />
         </div>
         <div className="flex items-center gap-2">
+          {/* Disabled (not just hidden) when trash is empty so the button
+              position is stable while items are being permanently removed.
+              The destructive variant matches the action's severity. */}
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setConfirmEmpty(true)}
+            disabled={!hasAnyDeleted || isEmptying}
+            data-testid="empty-trash"
+            title={hasAnyDeleted ? 'Permanently delete every clip + group in trash' : 'Trash is already empty'}
+          >
+            <Trash2 className="h-4 w-4 mr-1.5" />
+            {isEmptying ? 'Emptying…' : 'Empty Trash'}
+          </Button>
         </div>
       </div>
 
@@ -230,7 +285,7 @@ export default function TrashPage() {
           <DialogHeader>
             <DialogTitle>Delete Group Permanently?</DialogTitle>
             <DialogDescription>
-              This action cannot be undone. This group will be permanently deleted. 
+              This action cannot be undone. This group will be permanently deleted.
               Clips in this group will become ungrouped (not deleted).
             </DialogDescription>
           </DialogHeader>
@@ -240,6 +295,42 @@ export default function TrashPage() {
             </Button>
             <Button variant="destructive" onClick={handlePermanentDeleteGroup} disabled={isDeleting}>
               {isDeleting ? 'Deleting...' : 'Delete Permanently'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm empty-trash dialog — describes the exact count being removed
+          so the user can sanity-check before pulling the trigger. */}
+      <Dialog
+        open={confirmEmpty}
+        onOpenChange={(open) => !isEmptying && setConfirmEmpty(open)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Empty Trash?</DialogTitle>
+            <DialogDescription>
+              This action cannot be undone. {clips.length} clip{clips.length === 1 ? '' : 's'}
+              {' '}and {deletedGroups.length} group{deletedGroups.length === 1 ? '' : 's'}
+              {' '}will be permanently deleted. Clips inside the deleted groups will
+              become ungrouped, not deleted.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setConfirmEmpty(false)}
+              disabled={isEmptying}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleEmptyTrash}
+              disabled={isEmptying}
+              data-testid="empty-trash-confirm"
+            >
+              {isEmptying ? 'Emptying…' : 'Empty Trash'}
             </Button>
           </DialogFooter>
         </DialogContent>
