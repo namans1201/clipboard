@@ -53,7 +53,8 @@ CREATE POLICY "Users can create their own groups"
 
 CREATE POLICY "Users can update their own groups"
     ON public.groups FOR UPDATE
-    USING (auth.uid() = user_id);
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can delete their own groups"
     ON public.groups FOR DELETE
@@ -70,7 +71,8 @@ CREATE POLICY "Users can create their own clips"
 
 CREATE POLICY "Users can update their own clips"
     ON public.clips FOR UPDATE
-    USING (auth.uid() = user_id);
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can delete their own clips"
     ON public.clips FOR DELETE
@@ -93,3 +95,56 @@ CREATE TRIGGER set_updated_at
     BEFORE UPDATE ON public.clips
     FOR EACH ROW
     EXECUTE FUNCTION public.handle_updated_at();
+
+-- ── Server-enforced session expiry table ───────────────────────────────────
+-- See supabase/migrations/20260522_security_hardening.sql for the migration
+-- form. Keeping a copy here so a fresh `psql -f supabase-schema.sql`
+-- produces a fully-configured DB. The user_sessions table backs the
+-- middleware's expiry enforcement; user_metadata is no longer trusted.
+CREATE TABLE IF NOT EXISTS public.user_sessions (
+    user_id          UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    is_public_device BOOLEAN     NOT NULL DEFAULT FALSE,
+    started_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    expires_at       TIMESTAMPTZ NOT NULL
+);
+
+ALTER TABLE public.user_sessions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Read own session"
+    ON public.user_sessions FOR SELECT
+    USING (auth.uid() = user_id);
+
+CREATE OR REPLACE FUNCTION public.record_session_start(p_is_public BOOLEAN)
+RETURNS TIMESTAMPTZ
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_uid     UUID := auth.uid();
+  v_expires TIMESTAMPTZ;
+BEGIN
+  IF v_uid IS NULL THEN
+    RAISE EXCEPTION 'not authenticated';
+  END IF;
+  IF p_is_public THEN
+    v_expires := NOW() + INTERVAL '15 minutes';
+  ELSE
+    v_expires := NOW() + INTERVAL '30 days';
+  END IF;
+
+  INSERT INTO public.user_sessions (user_id, is_public_device, started_at, expires_at)
+  VALUES (v_uid, p_is_public, NOW(), v_expires)
+  ON CONFLICT (user_id) DO UPDATE
+    SET is_public_device = EXCLUDED.is_public_device,
+        started_at       = EXCLUDED.started_at,
+        expires_at       = EXCLUDED.expires_at;
+  RETURN v_expires;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.record_session_start(BOOLEAN) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.record_session_start(BOOLEAN) TO authenticated;
+
+CREATE INDEX IF NOT EXISTS idx_user_sessions_expires_at
+    ON public.user_sessions(expires_at);

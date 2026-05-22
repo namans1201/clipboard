@@ -44,8 +44,16 @@ export function MermaidDiagram({ code, className }: MermaidDiagramProps) {
 
     (async () => {
       try {
-        const mermaidMod = await import('mermaid');
+        // Mermaid + DOMPurify are both client-only, big-ish modules. Lazy
+        // import keeps them out of the main bundle until a mermaid clip
+        // is actually rendered.
+        const [mermaidMod, purifyMod] = await Promise.all([
+          import('mermaid'),
+          import('dompurify'),
+        ]);
         const mermaid = mermaidMod.default;
+        const DOMPurify = purifyMod.default;
+
         mermaid.initialize({
           startOnLoad: false,
           securityLevel: 'strict',
@@ -53,8 +61,18 @@ export function MermaidDiagram({ code, className }: MermaidDiagramProps) {
         });
         const { svg } = await mermaid.render(`${id}-svg`, code);
         if (cancelled) return;
+
+        // Defence in depth: even with mermaid's strict securityLevel,
+        // never trust user-derived SVG straight into innerHTML.
+        // DOMPurify strips event handlers, javascript: URLs, <script>,
+        // <foreignObject>-based escapes, etc. The svg profile preserves
+        // the diagram's tags + attributes we care about.
+        const clean = DOMPurify.sanitize(svg, {
+          USE_PROFILES: { svg: true, svgFilters: true },
+        });
+
         if (containerRef.current) {
-          containerRef.current.innerHTML = svg;
+          containerRef.current.innerHTML = clean;
           setError(null);
         }
       } catch (e) {

@@ -26,14 +26,17 @@ export function ProfileCard({ profile }: { profile: ProfileData }) {
     <div className={styles.wrapper}>
       <div className={styles.card} data-testid="profile-card">
         <div className={styles.photoFrame}>
+          {/* Optimized via Next's image pipeline (AVIF/WebP, responsive
+              sizing). The source is now a 600x600 WebP (~23 KB) — was a
+              1.5 MB PNG before the asset-optimization pass. */}
           <Image
             className={styles.photo}
             src={avatar}
             alt={`${name} avatar`}
             width={290}
             height={290}
+            sizes="(min-width: 640px) 290px, 80vw"
             priority
-            unoptimized
           />
         </div>
 

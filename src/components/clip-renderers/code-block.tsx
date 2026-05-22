@@ -99,15 +99,14 @@ const stripBackgrounds = (() => {
     const out: PrismStyle = {};
     for (const [selector, css] of Object.entries(theme)) {
       if (css && typeof css === 'object') {
-        const {
-          background: _bg,
-          backgroundColor: _bgColor,
-          ...rest
-        } = css as React.CSSProperties & {
-          background?: unknown;
-          backgroundColor?: unknown;
-        };
-        out[selector] = rest;
+        // Copy every key except background / backgroundColor — those are
+        // the per-token highlight rectangles we don't want.
+        const rest: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(css)) {
+          if (k === 'background' || k === 'backgroundColor') continue;
+          rest[k] = v;
+        }
+        out[selector] = rest as React.CSSProperties;
       } else {
         out[selector] = css;
       }

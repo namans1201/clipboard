@@ -21,7 +21,6 @@ export function ProfileButton() {
   useEffect(() => setMounted(true), []);
 
   const loadProfile = useCallback(async () => {
-    if (profile || loading) return;
     setLoading(true);
     setError(null);
     try {
@@ -29,16 +28,34 @@ export function ProfileButton() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = (await res.json()) as ProfileData;
       setProfile(data);
+      // Warm the browser image cache too — the modal mounts instantly
+      // because the response is in memory; the avatar is in cache.
+      if (typeof window !== 'undefined' && data.avatar) {
+        const img = new window.Image();
+        img.src = data.avatar;
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load profile');
     } finally {
       setLoading(false);
     }
-  }, [profile, loading]);
+  }, []);
+
+  // Prefetch the profile JSON + warm the avatar image cache on mount,
+  // not on click. The /api/profile route is tiny (and CDN-cached); the
+  // avatar is a 23 KB WebP. Combined with `loading: false` when the
+  // user actually clicks, the modal feels instant instead of waiting
+  // ~1-3 seconds for the original 1.5 MB PNG to download.
+  useEffect(() => {
+    if (!mounted) return;
+    void loadProfile();
+  }, [mounted, loadProfile]);
 
   const handleOpen = () => {
     setOpen(true);
-    loadProfile();
+    // Retry the fetch if the prefetch failed (network blip, etc.) —
+    // otherwise the prefetch already populated `profile`.
+    if (!profile && !loading) void loadProfile();
   };
   const handleClose = useCallback(() => setOpen(false), []);
 

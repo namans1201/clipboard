@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { Sidebar } from '@/components/sidebar-responsive';
 import { BlurOverlay } from '@/components/blur-overlay';
 import { Toaster } from '@/components/ui/sonner';
@@ -7,6 +8,7 @@ import { useAutoLock } from '@/hooks/use-auto-lock';
 import { useSessionHeartbeat } from '@/hooks/use-session-heartbeat';
 import { TopRightControls } from '@/components/top-right-controls';
 import { CompactProvider } from '@/contexts/compact-context';
+import { subscribeToSignoutBroadcasts } from '@/lib/signout';
 
 export default function DashboardLayout({
   children,
@@ -15,6 +17,11 @@ export default function DashboardLayout({
 }) {
   useAutoLock(5);
   useSessionHeartbeat();
+
+  // Listen for sign-out broadcasts from peer tabs (BroadcastChannel) — if
+  // any other tab in the same browser signs out, this one jumps to /login
+  // immediately instead of waiting for the next request to be 307'd.
+  useEffect(() => subscribeToSignoutBroadcasts(), []);
 
   // Colors swapped: <main> now uses the swapped solid --background (was the
   // sidebar's tone), and <Sidebar> now paints the --surface-gradient (the

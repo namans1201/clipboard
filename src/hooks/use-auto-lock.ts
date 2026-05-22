@@ -1,48 +1,62 @@
 'use client';
 
 import { useEffect, useCallback } from 'react';
-import { clearAuthCookies, createClient, resetClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
+import { signOutEverywhere } from '@/lib/signout';
 
+/**
+ * Auto-lock: after `timeoutMinutes` of no user input on a public-device
+ * session, sign the user out across every open tab.
+ *
+ * Source of truth for "is this a public-device session" is now
+ * public.user_sessions (set by record_session_start() at login), not
+ * sessionStorage — see the security-hardening migration.
+ */
 export function useAutoLock(timeoutMinutes: number = 5) {
   const handleLogout = useCallback(async () => {
-    const supabase = createClient();
-
-    try {
-      await supabase.auth.signOut();
-    } finally {
-      clearAuthCookies();
-      resetClient();
-      window.location.href = '/login';
-    }
+    await signOutEverywhere({ broadcastReason: 'session_expired' });
   }, []);
 
   useEffect(() => {
-    // Only enable auto-lock for public devices
-    const isPublicDevice = sessionStorage.getItem('is_public_device') === 'true';
-    if (!isPublicDevice) return;
-
-    let timeout: NodeJS.Timeout;
-    const timeoutMs = timeoutMinutes * 60 * 1000;
+    let cancelled = false;
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    let listenersAttached = false;
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
 
     const resetTimer = () => {
-      clearTimeout(timeout);
-      timeout = setTimeout(handleLogout, timeoutMs);
+      if (timeout) clearTimeout(timeout);
+      timeout = setTimeout(handleLogout, timeoutMinutes * 60 * 1000);
     };
 
-    // Events that reset the timer
-    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
-    events.forEach(event => {
-      document.addEventListener(event, resetTimer, { passive: true });
-    });
+    (async () => {
+      // Read the authoritative is_public_device flag from user_sessions.
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (cancelled || !session) return;
 
-    // Start timer
-    resetTimer();
+      const { data: row } = await supabase
+        .from('user_sessions')
+        .select('is_public_device')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+      if (cancelled) return;
+
+      // Only enable auto-lock for public devices.
+      if (!row?.is_public_device) return;
+
+      events.forEach((e) => document.addEventListener(e, resetTimer, { passive: true }));
+      listenersAttached = true;
+      resetTimer();
+    })();
 
     return () => {
-      clearTimeout(timeout);
-      events.forEach(event => {
-        document.removeEventListener(event, resetTimer);
-      });
+      cancelled = true;
+      if (timeout) clearTimeout(timeout);
+      if (listenersAttached) {
+        events.forEach((e) => document.removeEventListener(e, resetTimer));
+      }
     };
   }, [timeoutMinutes, handleLogout]);
 }

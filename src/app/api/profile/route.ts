@@ -10,7 +10,7 @@ import type { ProfileData } from '@/components/profile-card';
 const PROFILE: ProfileData = {
   name: 'Naman Shrimal',
   tagline: 'AI/ML & Full-Stack',
-  avatar: '/naman-avatar.png',
+  avatar: '/naman-avatar.webp',
   socials: {
     website:  'https://naman1201.vercel.app/',
     github:   'https://github.com/Namans12',
@@ -36,8 +36,14 @@ export async function GET() {
   try {
     const err = validate(PROFILE);
     if (err) {
+      // Log the precise reason server-side, but return a generic message
+      // to the client so we don't surface internal validation details to
+      // anonymous callers.
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('Profile validation failed:', err);
+      }
       return NextResponse.json(
-        { error: `Profile validation failed: ${err}` },
+        { error: 'Internal server error' },
         { status: 500 },
       );
     }
@@ -49,8 +55,12 @@ export async function GET() {
       },
     });
   } catch (e) {
+    // Same treatment for unexpected throws: log internally, return generic.
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('Profile route error:', e);
+    }
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : 'Unknown error' },
+      { error: 'Internal server error' },
       { status: 500 },
     );
   }

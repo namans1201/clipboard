@@ -118,7 +118,16 @@ export function MarkdownView({ content, className }: MarkdownViewProps) {
   return (
     <div className={className}>
       <div className="px-3 py-2 text-sm">
-        <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+        {/* `skipHtml` explicitly drops any raw HTML in the markdown source.
+            react-markdown's default already escapes raw HTML (we don't
+            ship rehype-raw), so this is documentation-as-defence rather
+            than a runtime change — it makes the intent explicit and
+            future-proofs the file against accidental rehype-raw additions. */}
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={components}
+          skipHtml
+        >
           {content}
         </ReactMarkdown>
       </div>

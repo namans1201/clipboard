@@ -1,6 +1,6 @@
 'use client';
 
-import { clearAuthCookies, createClient, resetClient } from '@/lib/supabase/client';
+import { signOutEverywhere } from '@/lib/signout';
 import FingerprintButton from './fingerprint-button';
 
 /**
@@ -15,15 +15,9 @@ import FingerprintButton from './fingerprint-button';
  */
 export function LockButton() {
   const handleLock = async () => {
-    const supabase = createClient();
-    try {
-      await supabase.auth.signOut();
-    } finally {
-      clearAuthCookies();
-      resetClient();
-      sessionStorage.clear();
-      window.location.href = '/login';
-    }
+    // Broadcasts to peer tabs so they redirect at the same time, and
+    // only clears the auth flag (not the whole sessionStorage).
+    await signOutEverywhere({ broadcastReason: 'logged_out' });
   };
 
   return (

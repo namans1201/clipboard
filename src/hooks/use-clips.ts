@@ -57,28 +57,78 @@ export function useClips(options: UseClipsOptions = {}) {
   }, [fetchClips]);
 
   // ── Realtime subscription ──────────────────────────────────────────
-  // Listens for INSERT / UPDATE / DELETE on the clips table so the UI
-  // stays in sync across tabs and devices without manual refresh.
+  // Listens for INSERT / UPDATE / DELETE on the clips table and patches
+  // local state from the payload directly — no full re-fetch. The old
+  // implementation re-queried the entire filtered list on every event,
+  // which thrashed the UI under bursty writes and burned read quota.
+  //
+  // The view filters (showPinned / showTrashed / groupId) are applied
+  // client-side here so an event for a clip outside the active view is
+  // safely ignored.
   useEffect(() => {
     const supabase = createClient();
+    const passesView = (clip: Clip) => {
+      if (options.showTrashed) {
+        if (!clip.is_deleted) return false;
+      } else {
+        if (clip.is_deleted) return false;
+      }
+      if (options.showPinned && !clip.is_pinned) return false;
+      if (options.groupId && clip.group_id !== options.groupId) return false;
+      return true;
+    };
+
+    const sortClips = (rows: Clip[]) =>
+      rows.slice().sort((a, b) => {
+        if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+
+    type ClipRealtimePayload = {
+      eventType: 'INSERT' | 'UPDATE' | 'DELETE';
+      new: Clip;
+      old: Partial<Clip> & { id?: string };
+    };
+
     const channel = supabase
       .channel('clips-realtime')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'clips' },
-        () => {
-          // Re-fetch to keep the list consistent with server state.
-          // This is lightweight because Supabase returns only the
-          // rows matching our filters.
-          fetchClips();
-        }
+        (payload: ClipRealtimePayload) => {
+          if (payload.eventType === 'INSERT') {
+            const next = payload.new as Clip;
+            if (!passesView(next)) return;
+            setClips((prev) =>
+              prev.some((c) => c.id === next.id) ? prev : sortClips([next, ...prev]),
+            );
+          } else if (payload.eventType === 'UPDATE') {
+            const next = payload.new as Clip;
+            setClips((prev) => {
+              const passes = passesView(next);
+              const existing = prev.some((c) => c.id === next.id);
+              if (passes && existing) {
+                return sortClips(prev.map((c) => (c.id === next.id ? next : c)));
+              }
+              if (passes && !existing) {
+                return sortClips([next, ...prev]);
+              }
+              // No longer passes filter — drop it from this view.
+              return prev.filter((c) => c.id !== next.id);
+            });
+          } else if (payload.eventType === 'DELETE') {
+            const old = payload.old as { id?: string };
+            if (!old?.id) return;
+            setClips((prev) => prev.filter((c) => c.id !== old.id));
+          }
+        },
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchClips]);
+  }, [options.groupId, options.showPinned, options.showTrashed]);
 
   const createClip = async (content: string, title?: string, groupId?: string) => {
     const supabase = createClient();

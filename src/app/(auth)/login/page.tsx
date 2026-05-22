@@ -9,7 +9,11 @@ import { Lock } from 'lucide-react';
 import { ProfileButton } from '@/components/profile-button';
 import styles from './login.module.css';
 
-const PUBLIC_DEVICE_SESSION_DURATION_MS = 15 * 60 * 1000;
+// Note: the expiry duration is enforced server-side now by the
+// public.record_session_start() function (see
+// supabase/migrations/20260522_security_hardening.sql). The client just
+// tells the function whether this is a public-device session; the SQL
+// caps both durations.
 
 /* Extend Document type for View Transition API */
 type DocWithVT = Document & {
@@ -67,25 +71,27 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      if (isPublicDevice) {
-        sessionStorage.setItem('is_public_device', 'true');
-      } else {
-        sessionStorage.removeItem('is_public_device');
-      }
       resetClient();
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      await supabase.auth.updateUser({
-        data: isPublicDevice
-          ? { is_public_device: true,  public_session_expires_at: Date.now() + PUBLIC_DEVICE_SESSION_DURATION_MS }
-          : { is_public_device: false, public_session_expires_at: null },
+
+      // Record session start server-side. The SECURITY DEFINER function
+      // record_session_start computes and stores the expires_at in
+      // public.user_sessions — the client cannot extend it. Public
+      // device → 15 min, trusted → 30 days.
+      const { error: rpcErr } = await supabase.rpc('record_session_start', {
+        p_is_public: isPublicDevice,
       });
+      if (rpcErr) throw rpcErr;
+
       toast.success('Logged in successfully!');
       router.push('/');
       router.refresh();
     } catch (error) {
-      console.error('Login error:', error);
+      // Don't console.error in production — the build strips it, but in
+      // dev we still want some signal. Use toast for the user.
+      if (process.env.NODE_ENV !== 'production') console.error('Login error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to login');
     } finally {
       setIsLoading(false);

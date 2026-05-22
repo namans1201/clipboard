@@ -1,58 +1,72 @@
 'use client';
 
 import { useEffect, useCallback } from 'react';
-import { createClient, clearAuthCookies, resetClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
+import { signOutEverywhere } from '@/lib/signout';
 
 /**
- * Validates the public-device session expiry every 60 seconds.
+ * Periodically checks the authoritative expires_at from public.user_sessions
+ * (the row written by record_session_start() at login). When it's in the
+ * past we sign out + redirect, so the user doesn't sit on a stale dashboard
+ * waiting for their next request to be 307'd.
  *
- * On login the server stamps `public_session_expires_at` (epoch ms) into
- * user_metadata.  This hook reads that value from the live session and
- * forces a sign-out + redirect as soon as the timestamp is in the past.
- *
- * Only activates when `sessionStorage.is_public_device === 'true'`.
+ * Polls for ALL session types now (not just public devices). The cadence
+ * is faster for public sessions because their 15-min cap means a missed
+ * tick can leave the user on a "dead" UI longer relative to total session
+ * length; trusted sessions are 30 days so a slow poll is fine.
  */
-export function useSessionHeartbeat(intervalMs = 60_000) {
+const PUBLIC_POLL_MS  = 60_000;        // 1 minute
+const TRUSTED_POLL_MS = 5 * 60_000;    // 5 minutes
+
+export function useSessionHeartbeat() {
   const forceLogout = useCallback(async () => {
-    const supabase = createClient();
-    try {
-      await supabase.auth.signOut();
-    } finally {
-      clearAuthCookies();
-      resetClient();
-      window.location.href = '/login?reason=session_expired';
-    }
+    await signOutEverywhere({
+      redirectTo: '/login?reason=session_expired',
+      broadcastReason: 'session_expired',
+    });
   }, []);
 
   useEffect(() => {
-    const isPublicDevice = sessionStorage.getItem('is_public_device') === 'true';
-    if (!isPublicDevice) return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
 
     const check = async () => {
+      if (cancelled) return;
       const supabase = createClient();
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
+      // No session at all → already logged out somewhere; bounce.
       if (!session) {
-        // Session is already gone – redirect to login
-        clearAuthCookies();
-        resetClient();
-        window.location.href = '/login?reason=session_expired';
+        await forceLogout();
         return;
       }
 
-      const expiresAt: number | undefined =
-        session.user.user_metadata?.public_session_expires_at;
+      const { data: row } = await supabase
+        .from('user_sessions')
+        .select('expires_at, is_public_device')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
 
-      if (expiresAt && Date.now() > expiresAt) {
+      if (row?.expires_at && new Date(row.expires_at).getTime() < Date.now()) {
         await forceLogout();
+        return;
+      }
+
+      // Pick the next interval based on session type. Tail-recursive
+      // setTimeout (rather than setInterval) lets each tick read the
+      // latest is_public_device value without juggling intervals.
+      const nextDelay = row?.is_public_device ? PUBLIC_POLL_MS : TRUSTED_POLL_MS;
+      if (!cancelled) {
+        timer = setTimeout(check, nextDelay);
       }
     };
 
-    // Run immediately on mount, then on every interval
     check();
-    const id = setInterval(check, intervalMs);
-    return () => clearInterval(id);
-  }, [intervalMs, forceLogout]);
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [forceLogout]);
 }

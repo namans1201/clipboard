@@ -37,25 +37,28 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // --- Server-enforced public-device session expiry ---
-  // If the user stamped a public_session_expires_at timestamp on login and it
-  // has now passed, sign them out immediately and redirect to login.
-  // This enforcement runs on *every* server request, so no client-side bypass
-  // is possible — even if the browser tab stays open indefinitely.
+  // --- Server-enforced session expiry ---
+  // Read the authoritative expires_at from public.user_sessions (RLS lets the
+  // user SELECT their own row only). Both public-device (15 min) and trusted
+  // (30 day) session caps live there — no user_metadata involvement, so a
+  // client can't tamper with their own expiry.
+  //
+  // If the row is missing (legacy users from before this migration) we leave
+  // the user signed in — the next login pass will populate the row. If it
+  // exists and is past, we force a sign-out.
   if (user) {
-    const expiresAt: number | undefined =
-      user.user_metadata?.public_session_expires_at;
-    const isPublicDeviceSession: boolean =
-      user.user_metadata?.is_public_device === true;
+    const { data: sessionRow } = await supabase
+      .from('user_sessions')
+      .select('expires_at')
+      .eq('user_id', user.id)
+      .maybeSingle();
 
-    if (isPublicDeviceSession && expiresAt && Date.now() > expiresAt) {
-      // Sign out server-side and redirect to login with an explanatory param.
+    if (sessionRow?.expires_at && new Date(sessionRow.expires_at).getTime() < Date.now()) {
       await supabase.auth.signOut();
       const url = request.nextUrl.clone();
       url.pathname = '/login';
       url.searchParams.set('reason', 'session_expired');
       const redirectResponse = NextResponse.redirect(url);
-      // Clear the auth cookie so the browser session is fully terminated.
       redirectResponse.cookies.set(SUPABASE_AUTH_COOKIE_NAME, '', {
         maxAge: 0,
         path: '/',
