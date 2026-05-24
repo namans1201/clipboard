@@ -163,7 +163,11 @@ export function ClipEditor({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] sm:max-h-[80vh] flex flex-col">
+      {/* Responsive ramp: shadcn base already gives mobile `100%-2rem`,
+          but it also ships `sm:max-w-sm` which `tailwind-merge` can't
+          reliably override. The `!` modifier forces our caps to win.
+          Tall on every size so long clips aren't tiny. */}
+      <DialogContent className="sm:!max-w-2xl md:!max-w-3xl lg:!max-w-4xl !max-h-[92vh] sm:!max-h-[88vh] flex flex-col">
         <DialogHeader className="pr-10">
           <DialogTitle className="flex items-center justify-between gap-4">
             <span className="truncate">Clip Details</span>
@@ -301,10 +305,13 @@ export function ClipEditor({
                     <pre> identical to the previous look for titleless clips
                     or unrecognised extensions. */}
                 <div className="mt-1">
+                  {/* maxHeight bumped from 400px to 70vh so a tall clip
+                      can fill the now-larger dialog (max-h:88vh on sm+).
+                      Scroll still kicks in past that. */}
                   <ClipContentRenderer
                     title={savedClip.title || clip.title}
                     content={savedClip.content}
-                    maxHeight="400px"
+                    maxHeight="70vh"
                   />
                 </div>
               </div>

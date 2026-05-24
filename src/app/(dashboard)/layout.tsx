@@ -6,7 +6,6 @@ import { BlurOverlay } from '@/components/blur-overlay';
 import { Toaster } from '@/components/ui/sonner';
 import { useAutoLock } from '@/hooks/use-auto-lock';
 import { useSessionHeartbeat } from '@/hooks/use-session-heartbeat';
-import { TopRightControls } from '@/components/top-right-controls';
 import { CompactProvider } from '@/contexts/compact-context';
 import { subscribeToSignoutBroadcasts } from '@/lib/signout';
 
@@ -32,13 +31,11 @@ export default function DashboardLayout({
       <BlurOverlay>
         <div className="flex h-screen overflow-hidden">
           <Sidebar />
-          {/* `relative` makes <main> the offset parent for TopRightControls,
-              which uses position: absolute. Result: the controls sit at the
-              top-right of the page content and scroll up with the rest of
-              the content (like the search bar and + button do), instead of
-              floating fixed to the viewport. */}
+          {/* Theme toggle is no longer absolute-positioned here — each page
+              now renders it inline with its search bar / + button row, so
+              the three controls share the same baseline (no overlap, no
+              right-padding reserve). */}
           <main className="flex-1 overflow-auto w-full bg-background relative">
-            <TopRightControls />
             {children}
           </main>
         </div>

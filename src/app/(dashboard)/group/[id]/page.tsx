@@ -9,6 +9,7 @@ import { ClipGridSkeleton } from '@/components/clip-card-skeleton';
 import { ClipEditor } from '@/components/clip-editor';
 import { NewClipDialog } from '@/components/new-clip-dialog';
 import { SearchBar } from '@/components/search-bar';
+import { DashboardThemeToggle } from '@/components/theme-toggle-dashboard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Clip } from '@/types/database';
@@ -160,13 +161,12 @@ export default function GroupPage() {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex-1 max-w-md">
+      <div className="flex items-center gap-2">
+        <div className="flex-1 min-w-0">
           <SearchBar value={searchQuery} onChange={handleSearchChange} />
         </div>
-        <div className="flex items-center gap-2">
-          <NewClipDialog groups={groups} onCreateClip={(content, title) => createClip(content, title, groupId)} />
-        </div>
+        <NewClipDialog groups={groups} onCreateClip={(content, title) => createClip(content, title, groupId)} />
+        <DashboardThemeToggle />
       </div>
 
       <ClipGrid

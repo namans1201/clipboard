@@ -90,6 +90,14 @@
   --sidebar-border: #C8D8EC;
   --sidebar-ring: #286EDC;
   --surface-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  /* Neumorphic button surface — tuned to the bottom-right portion of the
+     sidebar gradient (where the bottom-row controls actually sit). Using
+     --sidebar (#EFF5FC) here made the buttons brighter than their local
+     surface and produced a halo; this mid-tone lets the soft shadows read
+     as an embossed bevel instead. Bottom of the gradient is ~#c3cfe2;
+     #d6dfeb sits ~30% back toward the lighter end so the button still has
+     a faint lift against the background but no halo. */
+  --neu-surface: #d6dfeb;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -132,6 +140,10 @@
   --sidebar-border: rgba(60, 160, 230, 0.12);
   --sidebar-ring: #3CA0E6;
   --surface-gradient: linear-gradient(60deg, #29323c 0%, #485563 100%);
+  /* Dark neumorphic surface — picked from mid-way through the dark sidebar
+     gradient (#29323c → #485563) so the bottom-row buttons embed cleanly
+     into the local surface tone instead of standing out. */
+  --neu-surface: #38424f;
 }
 
 @layer base {

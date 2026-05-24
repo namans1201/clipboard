@@ -9,6 +9,7 @@ import { ClipGrid } from '@/components/clip-grid';
 import { ClipEditor } from '@/components/clip-editor';
 import { NewClipDialog } from '@/components/new-clip-dialog';
 import { SearchBar } from '@/components/search-bar';
+import { DashboardThemeToggle } from '@/components/theme-toggle-dashboard';
 import { ErrorDisplay } from '@/components/error-display';
 import { DashboardLoader } from '@/components/dashboard-loader';
 import { Clip } from '@/types/database';
@@ -54,18 +55,19 @@ export default function HomePage() {
         <ErrorDisplay error={clipsError || groupsError} onRetry={refetchClips} />
       )}
 
-      {/* ── Top bar: Search + New Clip.
-          The right-side reservation is for the absolute-positioned
-          TopRightControls cluster. That cluster is hidden below sm
-          (see top-right-controls.module.css), so we only reserve room
-          for it at sm+. */}
-      <div className="flex items-center gap-2 sm:pr-[200px]">
+      {/* ── Top bar: Search + New Clip + Theme toggle, all on one baseline.
+          The toggle used to be absolutely positioned via TopRightControls;
+          inlining it removes the right-padding reserve and lets all three
+          controls share the row's vertical centre. */}
+      <div className="flex items-center gap-2">
         {/* search bar — fills available space up to a max */}
         <div className="flex-1 min-w-0">
           <SearchBar value={searchQuery} onChange={handleSearchChange} />
         </div>
         {/* + button immediately after the bar */}
         <NewClipDialog groups={groups} onCreateClip={createClip} />
+        {/* day/night toggle pinned to the end of the row */}
+        <DashboardThemeToggle />
       </div>
 
       <ClipGrid

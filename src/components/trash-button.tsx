@@ -38,8 +38,8 @@ export function TrashButton({ onClick }: { onClick?: () => void }) {
         .trash-button {
           --main-focus: #2d8cf0;
           --font-color: ${isDark ? '#dedede' : '#323232'};
-          --bg-color-sub: ${isDark ? '#222' : '#dedede'};
-          --bg-color: ${isDark ? '#323232' : '#eee'};
+          --bg-color-sub: ${isDark ? 'rgba(72, 96, 130, 0.32)' : 'rgba(180, 195, 220, 0.55)'};
+          --bg-color: var(--neu-surface);
           --main-color: ${isDark ? '#dedede' : '#323232'};
           position: relative;
           width: 100%;
@@ -47,12 +47,21 @@ export function TrashButton({ onClick }: { onClick?: () => void }) {
           cursor: pointer;
           display: flex;
           align-items: center;
-          border: 2px solid var(--main-color);
-          box-shadow: 4px 4px var(--main-color);
+          border: none;
+          /* Neumorphic shadow tuned for --neu-surface (mid-gradient tone of
+             the sidebar). Same palette as the fingerprint button so the two
+             bottom-row controls read as one set. The previous version used
+             pure-white lift on a too-light surface and created a halo —
+             pulled both the offset and the alpha down so the bevel is
+             present but quiet. */
+          box-shadow:
+            5px 5px 10px ${isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(55, 84, 170, 0.22)'},
+            -5px -5px 11px ${isDark ? 'rgba(96, 120, 160, 0.32)' : 'rgba(255, 255, 255, 0.7)'},
+            inset 0 0 2px ${isDark ? 'rgba(72, 96, 130, 0.2)' : 'rgba(255, 255, 255, 0.2)'};
           background-color: var(--bg-color);
-          border-radius: 10px;
+          border-radius: 12px;
           overflow: hidden;
-          transition: all 0s;
+          transition: box-shadow 0.25s ease, transform 0.18s ease;
           text-decoration: none;
         }
 
@@ -61,10 +70,15 @@ export function TrashButton({ onClick }: { onClick?: () => void }) {
         }
 
         .trash-button .button__text {
-          transform: translateX(33px);
+          /* Center within the full button width. The original design used
+             translateX(33px) to leave room for an always-visible left-side
+             icon — now that the icon only appears as a hover slide-in, the
+             label should sit in the centre instead of biased left. */
+          flex: 1;
+          text-align: center;
           color: var(--font-color);
           font-weight: 600;
-          transition: all 0s;
+          transition: color 0.15s ease;
         }
 
         .trash-button .button__icon {
@@ -76,7 +90,10 @@ export function TrashButton({ onClick }: { onClick?: () => void }) {
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: all 0s;
+          /* Smooth slide-in instead of an instant snap. width + transform
+             animate together so the strip both grows and slides over the
+             label in one motion. */
+          transition: width 0.28s ease, transform 0.28s ease;
           right: 0;
         }
 
@@ -94,13 +111,18 @@ export function TrashButton({ onClick }: { onClick?: () => void }) {
         }
 
         .trash-button:hover .button__icon {
-          width: calc(100% - 4px);
+          /* Was calc(100% - 4px) to clear the old 2px solid border. The
+             border was removed when the button went neumorphic, so the
+             icon strip should cover the full width on hover — otherwise
+             a 4px sliver of the base background shows on the right edge. */
+          width: 100%;
           transform: translateX(0);
         }
 
         .trash-button:active {
-          transform: translate(3px, 3px);
-          box-shadow: 0px 0px var(--main-color);
+          box-shadow:
+            inset 4px 4px 8px ${isDark ? 'rgba(0, 0, 0, 0.45)' : 'rgba(55, 84, 170, 0.22)'},
+            inset -4px -4px 10px ${isDark ? 'rgba(96, 120, 160, 0.3)' : 'rgba(255, 255, 255, 0.7)'};
         }
       `}} />
     </>

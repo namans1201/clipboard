@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Files, Pin, Folder, Plus, Menu, Moon, Sun } from 'lucide-react';
-import { useTheme } from 'next-themes';
-import { switchTheme } from '@/lib/theme-switch';
+import { Files, Pin, Folder, Plus, Menu } from 'lucide-react';
 import { TrashButton } from '@/components/trash-button';
+import { LockButton } from '@/components/lock-button';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -26,38 +25,6 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { SidebarToggle } from '@/components/sidebar-toggle';
-/**
- * Compact icon-only theme toggle for the sidebar header. Exists alongside
- * the wide TopRightControls cluster (which hides itself on mobile because
- * it eats too much viewport). This way mobile users still have a theme
- * toggle without the 16em wide control.
- */
-function SidebarThemeToggle() {
-  const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  // Canonical next-themes SSR hydration guard: render a neutral placeholder
-  // until we know which theme to show. The eslint rule complains because
-  // `setState` inside `useEffect` is usually a smell — here it's the
-  // documented way to avoid the server/client value mismatch from useTheme().
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return <div className="h-7 w-7" aria-hidden />;
-  const isDark = resolvedTheme === 'dark';
-  return (
-    <button
-      type="button"
-      onClick={() => switchTheme(setTheme, isDark ? 'light' : 'dark')}
-      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      title={isDark ? 'Light mode' : 'Dark mode'}
-      className="inline-flex h-7 w-7 items-center justify-center rounded-md text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
-    >
-      {isDark
-        ? <Sun  className="h-4 w-4" />
-        : <Moon className="h-4 w-4" />}
-    </button>
-  );
-}
-
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { groups, createGroup } = useGroups();
@@ -108,14 +75,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           </span>
         </Link>
 
-        {/* Right side of header: theme toggle + grid/list compact toggle.
-            Theme toggle here covers mobile (the big TopRightControls
-            cluster is hidden below sm) without taking layout space at
-            wider breakpoints. */}
-        <div className="flex items-center gap-1">
-          <SidebarThemeToggle />
-          <CompactToggle checked={compact} onChange={setCompact} />
-        </div>
+        {/* grid / list view toggle (theme toggle now lives inline with each page's search bar). */}
+        <CompactToggle checked={compact} onChange={setCompact} />
       </div>
 
       <ScrollArea className="flex-1 px-2.5 py-3 smooth-scroll">
@@ -236,9 +197,13 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </ScrollArea>
 
-      {/* ── Bottom: Trash only (Lock moved to top-right corner) ── */}
-      <div className="p-3 border-t">
+      {/* ── Bottom: Trash on the left, Lock on the right.
+          LockButton lives here (no longer in a top-right cluster) so
+          mobile users can reach it on every viewport, and so it shares
+          the sidebar's neumorphic palette with the trash pill. */}
+      <div className="p-3 border-t flex items-center justify-between gap-2">
         <TrashButton onClick={onNavigate} />
+        <LockButton />
       </div>
     </>
   );
@@ -258,7 +223,7 @@ export function Sidebar() {
         >
           <Menu className="h-5 w-5" />
         </SheetTrigger>
-        <SheetContent side="left" className="p-0 w-56">
+        <SheetContent side="left" className="p-0 w-56" showCloseButton={false}>
           {/* Paint with --surface-gradient (the swapped main-area gradient).
               Inline style overrides the default sidebar bg. */}
           <aside

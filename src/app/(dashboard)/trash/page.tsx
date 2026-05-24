@@ -6,6 +6,7 @@ import { useGroups } from '@/hooks/use-groups';
 import { ClipGrid } from '@/components/clip-grid';
 import { ClipGridSkeleton } from '@/components/clip-card-skeleton';
 import { SearchBar } from '@/components/search-bar';
+import { DashboardThemeToggle } from '@/components/theme-toggle-dashboard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Trash2, Folder, RotateCcw, X } from 'lucide-react';
@@ -166,26 +167,25 @@ export default function TrashPage() {
         Deleted items can be restored or permanently deleted.
       </p>
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex-1 max-w-md">
+      <div className="flex items-center gap-2">
+        <div className="flex-1 min-w-0">
           <SearchBar value={searchQuery} onChange={handleSearchChange} />
         </div>
-        <div className="flex items-center gap-2">
-          {/* Disabled (not just hidden) when trash is empty so the button
-              position is stable while items are being permanently removed.
-              The destructive variant matches the action's severity. */}
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setConfirmEmpty(true)}
-            disabled={!hasAnyDeleted || isEmptying}
-            data-testid="empty-trash"
-            title={hasAnyDeleted ? 'Permanently delete every clip + group in trash' : 'Trash is already empty'}
-          >
-            <Trash2 className="h-4 w-4 mr-1.5" />
-            {isEmptying ? 'Emptying…' : 'Empty Trash'}
-          </Button>
-        </div>
+        {/* Disabled (not just hidden) when trash is empty so the button
+            position is stable while items are being permanently removed.
+            The destructive variant matches the action's severity. */}
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => setConfirmEmpty(true)}
+          disabled={!hasAnyDeleted || isEmptying}
+          data-testid="empty-trash"
+          title={hasAnyDeleted ? 'Permanently delete every clip + group in trash' : 'Trash is already empty'}
+        >
+          <Trash2 className="h-4 w-4 mr-1.5" />
+          {isEmptying ? 'Emptying…' : 'Empty Trash'}
+        </Button>
+        <DashboardThemeToggle />
       </div>
 
 

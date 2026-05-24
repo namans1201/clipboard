@@ -68,13 +68,13 @@ const css = `
     position: relative;
     width: 49px;
     height: 49px;
-    background: #f1f3f6;
+    background: var(--neu-surface);
     border-radius: 50%;
     box-shadow:
       inset 0 0 6px rgba(55, 84, 170, 0),
       inset 0 0 8px rgba(255, 255, 255, 0),
-      6px 6px 11px rgba(55, 84, 170, 0.15),
-      -6px -6px 13px white,
+      5px 5px 10px rgba(55, 84, 170, 0.22),
+      -5px -5px 11px rgba(255, 255, 255, 0.65),
       inset 0 0 2px rgba(255, 255, 255, 0.2);
     transition: box-shadow 0.7s ease-in-out;
     display: flex;
@@ -90,8 +90,8 @@ const css = `
   .fp-btn:hover,
   .fp-btn:focus-visible {
     box-shadow:
-      inset 4px 4px 9px rgba(55, 84, 170, 0.15),
-      inset -4px -4px 12px white,
+      inset 4px 4px 9px rgba(55, 84, 170, 0.18),
+      inset -4px -4px 12px rgba(255, 255, 255, 0.7),
       0 0 2px rgba(255, 255, 255, 0.2);
   }
 
@@ -132,21 +132,20 @@ const css = `
      so the 0.7s transition into the pressed-in hover state remains
      smooth in both themes. */
   :where(html.dark) .fp-btn {
-    background: #131c2c;
     box-shadow:
       inset 0 0 6px rgba(0, 0, 0, 0),
-      inset 0 0 8px rgba(40, 60, 95, 0),
-      6px 6px 11px rgba(0, 0, 0, 0.55),
-      -6px -6px 13px rgba(40, 60, 95, 0.42),
-      inset 0 0 2px rgba(40, 60, 95, 0.2);
+      inset 0 0 8px rgba(72, 96, 130, 0),
+      5px 5px 10px rgba(0, 0, 0, 0.5),
+      -5px -5px 11px rgba(96, 120, 160, 0.32),
+      inset 0 0 2px rgba(72, 96, 130, 0.2);
   }
 
   :where(html.dark) .fp-btn:hover,
   :where(html.dark) .fp-btn:focus-visible {
     box-shadow:
-      inset 4px 4px 9px rgba(0, 0, 0, 0.5),
-      inset -4px -4px 12px rgba(40, 60, 95, 0.4),
-      0 0 2px rgba(40, 60, 95, 0.2);
+      inset 4px 4px 9px rgba(0, 0, 0, 0.45),
+      inset -4px -4px 12px rgba(96, 120, 160, 0.3),
+      0 0 2px rgba(72, 96, 130, 0.2);
   }
 
   :where(html.dark) .fp-svg {

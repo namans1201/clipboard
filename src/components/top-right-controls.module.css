@@ -1,45 +1,25 @@
-/*
-  Align the controls' vertical centre with the search-bar's vertical centre.
-
-  Search-bar height ≈ 61px (border + padding + input).
-  Page top padding:  p-4  = 16px  →  search centre @ 16 + 30.5 = 46.5px
-                     sm:p-6 = 24px  →  search centre @ 24 + 30.5 = 54.5px
-
-  Controls height = 49px  →  centre = top + 24.5px
-  Required top:
-    default  →  46.5 − 24.5 = 22px
-    sm       →  54.5 − 24.5 = 30px
-*/
-
 /* `position: absolute` positions relative to <main> (the offset parent),
    which is the scroll container. Children of a scrolling container scroll
    along with its content — so these controls start aligned with the
    search bar and slide up out of view as the user scrolls, exactly like
    the search bar and add button.
 
-   Hidden on mobile (<640px): the wide 16em theme toggle + lock button
-   together eat ~80% of a 375px viewport, leaving no room for the search
-   bar. Mobile users get a compact icon theme toggle in the sidebar
-   header (see sidebar-responsive.tsx) and the lock action via the
-   hamburger Sheet menu. */
+   Visible at every viewport. With only the wide day/night toggle (the
+   LockButton lives in the sidebar now), the cluster measures ~112×49px,
+   which fits even at 375px wide. */
 .controls {
-  display: none;
   position: absolute;
   z-index: 10;
+  display: flex;
   align-items: center;
-  gap: 0.75rem;
-  top: 22px;
-  right: 1.1rem;
+  gap: 0.5rem;
+  top: 16px;
+  right: 0.75rem;
 }
 
 @media (min-width: 640px) {
   .controls {
-    display: flex;
-  }
-}
-
-@media (min-width: 640px) {
-  .controls {
-    top: 30px;
+    top: 22px;
+    right: 1.1rem;
   }
 }
