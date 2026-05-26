@@ -302,7 +302,7 @@ function ClipCardComponent({
         </div>
         {showQuickView && (
           <Dialog open={showQuickView} onOpenChange={setShowQuickView}>
-            <DialogContent className="sm:!max-w-2xl md:!max-w-3xl lg:!max-w-4xl !max-h-[92vh] sm:!max-h-[88vh] flex flex-col">
+            <DialogContent className="!w-fit !min-w-[20rem] sm:!min-w-[28rem] !max-w-[calc(100vw-2rem)] sm:!max-w-2xl md:!max-w-3xl lg:!max-w-4xl !max-h-[92vh] sm:!max-h-[88vh] flex flex-col">
               <DialogHeader>
                 <DialogTitle>{clip.title || 'Clip Preview'}</DialogTitle>
               </DialogHeader>
@@ -555,7 +555,7 @@ function ClipCardComponent({
 
       {/* Quick View Dialog */}
       <Dialog open={showQuickView} onOpenChange={setShowQuickView}>
-        <DialogContent className="sm:!max-w-2xl md:!max-w-3xl lg:!max-w-4xl !max-h-[92vh] sm:!max-h-[88vh] flex flex-col">
+        <DialogContent className="!w-fit !min-w-[20rem] sm:!min-w-[28rem] !max-w-[calc(100vw-2rem)] sm:!max-w-2xl md:!max-w-3xl lg:!max-w-4xl !max-h-[92vh] sm:!max-h-[88vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>{clip.title || 'Clip Preview'}</DialogTitle>
           </DialogHeader>

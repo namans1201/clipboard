@@ -38,7 +38,7 @@ export function ClipContentRenderer({
   maxHeight,
   className,
 }: ClipContentRendererProps) {
-  const kind = inferKind(title);
+  const kind = inferKind(title, content);
 
   const wrapperClass = cn(
     'bg-muted/50 rounded p-0 overflow-auto',

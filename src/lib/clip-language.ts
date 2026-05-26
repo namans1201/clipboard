@@ -70,18 +70,49 @@ const MARKDOWN_EXTS = new Set(['md', 'markdown', 'mdown', 'mkd']);
 const MERMAID_EXTS = new Set(['mmd', 'mermaid']);
 
 /**
+ * Strong, unambiguous markers that say "this body is markdown" even when
+ * the title gives no hint (e.g. a clip pasted from a chat). Kept narrow
+ * so plain prose doesn't get reformatted by mistake:
+ *  - GFM table separator row (`| --- | --- |`), only meaningful in tables
+ *  - fenced code block (```)
+ *  - ATX heading (`# …`) — false-positive risk is bounded by the
+ *    title-based path already catching `.py` etc. as code
+ */
+const GFM_TABLE_SEPARATOR = /^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$/m;
+const FENCED_CODE_BLOCK = /^\s*```/m;
+const ATX_HEADING = /^#{1,6}\s+\S/m;
+
+export function looksLikeMarkdown(content: string | null | undefined): boolean {
+  if (!content) return false;
+  return (
+    GFM_TABLE_SEPARATOR.test(content) ||
+    FENCED_CODE_BLOCK.test(content) ||
+    ATX_HEADING.test(content)
+  );
+}
+
+/**
  * Decide which renderer should handle a clip. Returns:
  *  - 'mermaid'  → flow/sequence/etc. diagram (rendered as SVG)
  *  - 'markdown' → headings/lists/etc. (fenced code blocks get highlighted)
  *  - 'code'     → syntax-highlighted via Prism
  *  - 'text'     → raw `<pre>` (the existing behaviour, also the fallback)
+ *
+ * If `content` is supplied and the title doesn't classify the clip, we
+ * sniff the body for unambiguous markdown markers before falling back to
+ * plain text — that's what catches title-less pasted tables.
  */
-export function inferKind(title: string | null | undefined): ClipKind {
+export function inferKind(
+  title: string | null | undefined,
+  content?: string | null,
+): ClipKind {
   const ext = getExtension(title);
-  if (!ext) return 'text';
-  if (MERMAID_EXTS.has(ext)) return 'mermaid';
-  if (MARKDOWN_EXTS.has(ext)) return 'markdown';
-  if (ext in EXT_TO_PRISM) return 'code';
+  if (ext) {
+    if (MERMAID_EXTS.has(ext)) return 'mermaid';
+    if (MARKDOWN_EXTS.has(ext)) return 'markdown';
+    if (ext in EXT_TO_PRISM) return 'code';
+  }
+  if (looksLikeMarkdown(content)) return 'markdown';
   return 'text';
 }
 
