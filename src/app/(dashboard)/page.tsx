@@ -55,18 +55,11 @@ export default function HomePage() {
         <ErrorDisplay error={clipsError || groupsError} onRetry={refetchClips} />
       )}
 
-      {/* ── Top bar: Search + New Clip + Theme toggle, all on one baseline.
-          The toggle used to be absolutely positioned via TopRightControls;
-          inlining it removes the right-padding reserve and lets all three
-          controls share the row's vertical centre. */}
       <div className="flex items-center gap-2">
-        {/* search bar — fills available space up to a max */}
         <div className="flex-1 min-w-0">
           <SearchBar value={searchQuery} onChange={handleSearchChange} />
         </div>
-        {/* + button immediately after the bar */}
         <NewClipDialog groups={groups} onCreateClip={createClip} />
-        {/* day/night toggle pinned to the end of the row */}
         <DashboardThemeToggle />
       </div>
 

@@ -126,39 +126,47 @@ export default function GroupPage() {
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 smooth-scroll">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <FolderOpen className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
-          {isEditing ? (
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-              <Input
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                className="h-9 flex-1 min-w-0"
-                autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleSaveEdit();
-                  if (e.key === 'Escape') handleCancelEdit();
-                }}
-              />
-              <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={handleSaveEdit}>
+        {isEditing ? (
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <FolderOpen className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
+            <Input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              className="h-9 flex-1 min-w-0"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSaveEdit();
+                if (e.key === 'Escape') handleCancelEdit();
+              }}
+            />
+            <div className="flex items-center gap-0 flex-shrink-0">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleSaveEdit}>
                 <Check className="h-4 w-4 text-green-600" />
               </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={handleCancelEdit}>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleCancelEdit}>
                 <X className="h-4 w-4 text-destructive" />
               </Button>
             </div>
-          ) : (
-            <>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            {/* icon + title: tight grouping so the folder reads as a label for the name */}
+            <div className="flex items-center gap-1.5 min-w-0">
+              <FolderOpen className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
               <h1 className="text-xl sm:text-2xl font-semibold truncate">{group?.name}</h1>
-              <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={handleStartEdit}>
+            </div>
+            {/* edit + delete: tight grouping so the two row-actions read as a pair */}
+            <div className="flex items-center gap-0 flex-shrink-0">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleStartEdit}>
                 <Pencil className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive flex-shrink-0" onClick={() => setShowDeleteDialog(true)}>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setShowDeleteDialog(true)}>
                 <Trash2 className="h-4 w-4" />
               </Button>
-            </>
-          )}
-        </div>
+            </div>
+          </div>
+        )}
+        <DashboardThemeToggle />
       </div>
 
       <div className="flex items-center gap-2">
@@ -166,7 +174,6 @@ export default function GroupPage() {
           <SearchBar value={searchQuery} onChange={handleSearchChange} />
         </div>
         <NewClipDialog groups={groups} onCreateClip={(content, title) => createClip(content, title, groupId)} />
-        <DashboardThemeToggle />
       </div>
 
       <ClipGrid

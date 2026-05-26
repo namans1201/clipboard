@@ -161,6 +161,9 @@ export default function TrashPage() {
       <div className="flex items-center gap-3">
         <Trash2 className="h-5 w-5 sm:h-6 sm:w-6" />
         <h1 className="text-xl sm:text-2xl font-semibold">Trash</h1>
+        <div className="ml-auto">
+          <DashboardThemeToggle />
+        </div>
       </div>
 
       <p className="text-sm sm:text-base text-muted-foreground">
@@ -171,9 +174,6 @@ export default function TrashPage() {
         <div className="flex-1 min-w-0">
           <SearchBar value={searchQuery} onChange={handleSearchChange} />
         </div>
-        {/* Disabled (not just hidden) when trash is empty so the button
-            position is stable while items are being permanently removed.
-            The destructive variant matches the action's severity. */}
         <Button
           variant="destructive"
           size="sm"
@@ -185,7 +185,6 @@ export default function TrashPage() {
           <Trash2 className="h-4 w-4 mr-1.5" />
           {isEmptying ? 'Emptying…' : 'Empty Trash'}
         </Button>
-        <DashboardThemeToggle />
       </div>
 
 

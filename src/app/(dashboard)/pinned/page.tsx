@@ -61,13 +61,15 @@ export default function PinnedPage() {
       <div className="flex items-center gap-3">
         <Pin className="h-5 w-5 sm:h-6 sm:w-6" />
         <h1 className="text-xl sm:text-2xl font-semibold">Pinned Clips</h1>
+        <div className="ml-auto">
+          <DashboardThemeToggle />
+        </div>
       </div>
 
       <div className="flex items-center gap-2">
         <div className="flex-1 min-w-0">
           <SearchBar value={searchQuery} onChange={handleSearchChange} />
         </div>
-        <DashboardThemeToggle />
       </div>
 
       <ClipGrid
