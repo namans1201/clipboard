@@ -201,7 +201,7 @@
 .titleSection h1 strong {
   display: inline-block;
   color: transparent;
-  background-image: url('https://assets.codepen.io/165585/circle-bg_1.svg');
+  background-image: url('/circle-bg.svg');
   background-color: var(--text-circle);
   background-size: 400px;
   background-position: 50% 80%;
